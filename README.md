@@ -1,4 +1,4 @@
-# Project Daisy Night 
+# Project Daizy Night 
 
 Designed for ATOM Reforge Community's daily activities.
 
