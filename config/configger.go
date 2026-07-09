@@ -35,11 +35,12 @@ func InitConfig() error {
 }
 
 func setDefaults() {
-	viper.SetDefault("http.listenPort", 4703)
-	viper.SetDefault("http.listenAddress", "localhost")
-	viper.SetDefault("http.versionMask", 0)
-	viper.SetDefault("database.isDebugMode", false)
-	viper.SetDefault("log.isDebugMode", false)
+	viper.SetDefault("Http.ListenPort", 4703)
+	viper.SetDefault("Http.ListenAddress", "localhost")
+	viper.SetDefault("Http.VersionMask", 0)
+	viper.SetDefault("Main.IsDebugMode", true)
+	viper.SetDefault("Database.IsDebugMode", false)
+	viper.SetDefault("Log.IsDebugMode", false)
 }
 
 // havent finished yet.
