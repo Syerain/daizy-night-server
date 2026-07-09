@@ -1,7 +1,7 @@
 package server
 
-type requestType int
+type RequestType int
 
 const (
-	Login requestType = iota
+	Login RequestType = iota
 )

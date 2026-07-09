@@ -40,7 +40,7 @@ func setDefaults() {
 	viper.SetDefault("Http.VersionMask", 0)
 	viper.SetDefault("Main.IsDebugMode", true)
 	viper.SetDefault("Database.IsDebugMode", false)
-	viper.SetDefault("Log.IsDebugMode", false)
+	viper.SetDefault("Log.IsColored", false)
 }
 
 // havent finished yet.

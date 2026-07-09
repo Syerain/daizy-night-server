@@ -1,5 +1,5 @@
 package server
 
-type request struct {
-	requestType requestType
+type Request struct {
+	requestType RequestType
 }

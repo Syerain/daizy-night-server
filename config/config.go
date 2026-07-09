@@ -15,7 +15,7 @@ type MainConfig struct {
 type HttpConfig struct {
 	ListenPort    int    `mapstructure:"ListenPort"`
 	ListenAddress string `mapstructure:"ListenAddress"`
-	// versionMask is used to tell the server which version of request is appropriate to use.
+	// VersionMask is used to tell the server which version of request is appropriate to use.
 	// a request with a version number smaller than the versionMask will be rejected by the server.
 	VersionMask int `mapstructure:"VersionMask"`
 }
@@ -25,5 +25,5 @@ type DatabaseConfig struct {
 }
 
 type LogConfig struct {
-	IsDebugMode bool `mapstructure:"IsDebugMode"`
+	isColored bool `mapstructure:"IsColored"`
 }

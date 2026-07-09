@@ -30,9 +30,3 @@ func InitModuleLogger(isDebugMode bool, moduleName string) {
 
 	slog.SetDefault(logger)
 }
-
-/*
-type moduleHandler struct {
-	handler slog.Handler
-	name    string
-} */
