@@ -7,7 +7,10 @@ The project name Daisy Night is a homophone of The Hazy Night.
 ## Tech stack & packages
 
 golang 1.26.5
+
 viper:  config file io
-tint:   colored logs
+
+tinter:   colored logs
+
 grpc
 
