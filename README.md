@@ -6,11 +6,21 @@ The project name Daisy Night is a homophone of The Hazy Night.
 
 ## Tech stack & packages
 
-golang 1.26.5
+**golang 1.26.5**
 
-viper:  config file io
+Go is an open source programming language that makes it easy to build simple, reliable, and efficient software.
 
-tinter:   colored logs
+**viper**
 
-grpc
+Viper is a complete configuration solution for Go applications including 12-Factor apps. 
+It is designed to work within any application, and can handle all types of configuration needs and formats.
+
+**tinter**
+
+Package tint implements a zero-dependency slog.Handler that writes tinted (colorized) logs. 
+Its output format is inspired by the zerolog.ConsoleWriter and slog.TextHandler.
+
+**echo**
+
+high performance, minimalist Go web framework
 

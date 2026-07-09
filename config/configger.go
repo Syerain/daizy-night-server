@@ -1,12 +1,14 @@
 package config
 
 import (
+	"errors"
 	"log/slog"
 	"net"
 
 	"github.com/spf13/viper"
 )
 
+// get it via GetConfig()
 var globalConfig *Config
 
 func GetConfig() *Config {
@@ -15,18 +17,24 @@ func GetConfig() *Config {
 
 // currently stated the returned error but didnt use.
 func InitConfig() error {
+	// viper params
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
 
+	// viper setting default values.
 	setDefaults()
 
+	// trying to read in config file and validate then.
+	// any errors will be throwed upward.
 	if err := viper.ReadInConfig(); err != nil {
 		slog.Warn("Failed to read Config file. Using default config values.")
 	}
-
 	var cfg Config
 	if err := viper.Unmarshal(&cfg); err != nil {
+		return err
+	}
+	if err := validateConfig(&cfg); err != nil {
 		return err
 	}
 
@@ -45,25 +53,25 @@ func setDefaults() {
 
 // havent finished yet.
 func validateConfig(cfg *Config) error {
-	errorCounts := 0
+	var errs []error
 
-	// used
-	switch 1 {
-	case 1:
-		if cfg.Http.ListenPort < 1 || cfg.Http.ListenPort > 65535 {
-			errorCounts++
-			slog.Error("Errors in Config:Invalid listen port. Must be between 1 and 65535.")
-		}
-		fallthrough
-	case 2:
-		parsed := net.ParseIP(cfg.Http.ListenAddress)
-		if parsed == nil {
-			errorCounts++
-			slog.Error("Errors in Config:Invalid listen address.")
-		}
-		fallthrough
-	case 3:
-
+	if cfg.Http.ListenPort < 1 || cfg.Http.ListenPort > 65535 {
+		errs = append(errs, &ConfigValidationError{
+			Field:   "Http.ListenPort",
+			Message: "must be between 1 and 65535",
+		})
 	}
-	return nil
+	if parsedIP := net.ParseIP(cfg.Http.ListenAddress); parsedIP == nil {
+		errs = append(errs, &ConfigValidationError{
+			Field:   "Http.ListenAddress",
+			Message: "must be a valid IP address",
+		})
+	}
+	if cfg.Http.VersionMask < 0 {
+		errs = append(errs, &ConfigValidationError{
+			Field:   "Http.VersionMask",
+			Message: "must be a non-negative integer",
+		})
+	}
+	return errors.Join(errs...)
 }
