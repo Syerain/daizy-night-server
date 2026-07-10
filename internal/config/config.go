@@ -27,5 +27,5 @@ type DatabaseConfig struct {
 type LogConfig struct {
 	// log level is determined by MainConfig, instead of LogConfig.
 	// LogConifg controls those exact style params of logs.
-	isColored bool `mapstructure:"IsColored"`
+	IsColored bool `mapstructure:"IsColored"`
 }
