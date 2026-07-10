@@ -1,8 +1,8 @@
 package main
 
 import (
-	"daizynight/config"
-	"daizynight/utils"
+	"daizynight/internal/config"
+	"daizynight/internal/utils"
 	"fmt"
 	"log/slog"
 )
