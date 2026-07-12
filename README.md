@@ -15,7 +15,7 @@ Go is an open source programming language that makes it easy to build simple, re
 **viper**
 
 Viper is a complete configuration solution for Go applications including 12-Factor apps. 
-It is designed to work within any application, and can handle all types of configuration needs and formats.
+It is designed to work within any application, and can handle all types of configuration needs anclsd formats.
 
 **tinter**
 
@@ -25,4 +25,12 @@ Its output format is inspired by the zerolog.ConsoleWriter and slog.TextHandler.
 **echo**
 
 high performance, minimalist Go web framework
+
+**sqlite**
+
+SQLite is a C-language library that implements a small, fast, self-contained, high-reliability, full-featured, SQL database engine.
+
+**gorm**
+
+GORM, a popular ORM library for Golang, provides a flexible plugin system that allows developers to extend its functionality. 
 
