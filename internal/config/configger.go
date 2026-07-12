@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// get it via GetConfig()
+// you should get it via GetConfig()
 var globalConfig *Config
 
 func GetConfig() *Config {
@@ -42,6 +42,7 @@ func InitConfig() error {
 	return nil
 }
 
+// in fact i dont know whether we should keep IsColored true or not..
 func setDefaults() {
 	viper.SetDefault("Http.ListenPort", 4703)
 	viper.SetDefault("Http.ListenAddress", "localhost")
@@ -52,6 +53,7 @@ func setDefaults() {
 }
 
 // havent finished yet.
+// it's necessary to have a validation.
 func validateConfig(cfg *Config) error {
 	var errs []error
 
