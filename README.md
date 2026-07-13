@@ -6,6 +6,17 @@ The project name Daisy Night is a homophone of The Hazy Night.
 
 It's also my first golang project and I wished to learn something during the work.
 
+## Repo
+
+server
+https://github.com/Syerain/daizy-night-server
+
+scheduled client
+https://github.com/Syerain/daizy-night-client
+
+cli test client
+https://github.com/Syerain/daizy-night-cliapp
+
 ## Tech stack & packages
 
 **golang 1.26.5**
