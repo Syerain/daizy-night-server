@@ -2,6 +2,7 @@ package main
 
 import (
 	"daizynight/internal/config"
+	"daizynight/internal/crypto"
 	"daizynight/internal/db"
 	"daizynight/internal/router"
 	"daizynight/internal/utils"
@@ -12,10 +13,12 @@ import (
 
 func main() {
 	// reading config, temply using slog vanilla logger.
-	slog.Info("Server starting...")
-	slog.Info("Reading config...")
+	{
+		slog.Info("Server starting...")
+		slog.Info("Reading config...")
+	}
 
-	// initializa colored logger
+	// initializing Global Config
 	err := config.InitConfig()
 	if err != nil {
 		slog.Error("FATAL: Failed to initialize config", "error", err)
@@ -24,16 +27,22 @@ func main() {
 
 	cfg := config.GetConfig()
 
+	// <--------- configuration below --------->
+
 	// initializing our colored logger
 	utils.InitModuleLogger(cfg.Main.IsDebugMode, "main")
 
+	// initializing crypto
+	crypto.Init(cfg)
+
 	// printing basic config info
-	if cfg.Main.IsDebugMode {
-		slog.Info("Debug mode is enabled.")
+	{
+		slog.Info("Debug Mode:", slog.Bool("debug", cfg.Main.IsDebugMode))
+		slog.Info("Config listen port: " + fmt.Sprintf("%d", cfg.Http.ListenPort))
+		slog.Info("Config listen address: " + cfg.Http.ListenAddress)
 	}
 
-	slog.Info("Config listen port: " + fmt.Sprintf("%d", cfg.Http.ListenPort))
-	slog.Info("Config listen address: " + cfg.Http.ListenAddress)
+	// <---------- service below --------->
 
 	// starting db
 	err = db.Init()

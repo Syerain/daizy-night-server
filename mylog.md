@@ -14,3 +14,15 @@
 @/internal/model/user.go
 
 17:14 okay seems finished user model.
+
+## bigadv 26-07-13 night
+@global
+
+/internal/crypto,
+/internal/service,
+/internal/config,
+/internal/db,
+/internal/model,
+/internal/handler,
+/etc
+
