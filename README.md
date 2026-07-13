@@ -17,6 +17,10 @@ https://github.com/Syerain/daizy-night-client
 cli test client
 https://github.com/Syerain/daizy-night-cliapp
 
+## Usage
+
+you must edit Config.yaml beforge the first launch
+
 ## Tech stack & packages
 
 **golang 1.26.5**
