@@ -1,17 +1,33 @@
 package model
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type User struct {
+	gorm.Model
 	// basic things:
-	ID       int64  `gorm:"unique;not null"`
-	Nickname string `gorm:"unique;not null"`
-	Email    string `gorm:"not null"`
+	Username     string `gorm:"unique;not null"`
+	Nickname     string `gorm:"unique;not null"`
+	Email        string
+	Tele         string
+	Registercode string `gorm:"unique;not null"`
 
 	// time related:
-	// RegisterTime differs from gorm.Model.CreatedAt
-	RegisterTime time.Time
+	RegisterTime time.Time // differs from gorm.Model.CreatedAt
 
-	// security:
+	// Security:
 	Password string `gorm:"not null"`
+
+	// Permission
+	/* notice that despite the existence of PermissionWeight,
+	still currently using legacy permission roles. */
+	IsAdmin          bool  `gorm:"not null;default:false"`
+	PermissionWeight int16 `gorm:"default:20"`
+
+	// Github OAuth
+	GitHubID    int64  `gorm:"unique"`
+	GitHubLogin string `gorm:"unique"` // github login username for presentation
 }

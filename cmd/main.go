@@ -2,6 +2,7 @@ package main
 
 import (
 	"daizynight/internal/config"
+	"daizynight/internal/db"
 	"daizynight/internal/router"
 	"daizynight/internal/utils"
 	"fmt"
@@ -20,6 +21,7 @@ func main() {
 		slog.Error("FATAL: Failed to initialize config", "error", err)
 		return
 	}
+
 	cfg := config.GetConfig()
 
 	// initializing our colored logger
@@ -32,6 +34,12 @@ func main() {
 
 	slog.Info("Config listen port: " + fmt.Sprintf("%d", cfg.Http.ListenPort))
 	slog.Info("Config listen address: " + cfg.Http.ListenAddress)
+
+	// starting db
+	err = db.Init()
+	if err != nil {
+		slog.Error("FATAL:Couldnt init database !")
+	}
 
 	// loading Echo engine
 	slog.Info("Loading HTTP server ...")

@@ -1,12 +1,13 @@
 package config
 
 // Config struct holds the configuration for the server
-// Notice that server configuration differs from client's despite they share the same name.
+/* Notice that server configuration differs from client's despite they share the same name. */
 type Config struct {
 	Main     MainConfig     `mapstructure:"Main"`
 	Http     HttpConfig     `mapstructure:"Http"`
 	Database DatabaseConfig `mapstructure:"Database"`
 	Log      LogConfig      `mapstructure:"Log"`
+	Security SecurityConfig `mapstructure:"Security"`
 }
 
 type MainConfig struct {
@@ -15,8 +16,8 @@ type MainConfig struct {
 type HttpConfig struct {
 	ListenPort    int    `mapstructure:"ListenPort"`
 	ListenAddress string `mapstructure:"ListenAddress"`
-	// VersionMask is used to tell the server which version of request is appropriate to use.
-	// a request with a version number smaller than the versionMask will be rejected by the server.
+	/* VersionMask is used to tell the server which versions of client request are appropriate to use.
+	a request with a version number smaller than the VersionMask will be rejected by the server. */
 	VersionMask int `mapstructure:"VersionMask"`
 }
 
@@ -28,4 +29,9 @@ type LogConfig struct {
 	// log level is determined by MainConfig, instead of LogConfig.
 	// LogConifg controls those exact style params of logs.
 	IsColored bool `mapstructure:"IsColored"`
+}
+
+type SecurityConfig struct {
+	Ed25519enckey string `mapstructure:"Ed25519enckey"`
+	Ed25519deckey string `mapstructure:"Ed25519deckey"`
 }
