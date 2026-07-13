@@ -45,10 +45,11 @@ func InitConfig() error {
 // in fact i dont know whether we should keep IsColored true or not..
 func setDefaults() {
 	viper.SetDefault("Http.ListenPort", 4703)
-	viper.SetDefault("Http.ListenAddress", "localhost")
+	viper.SetDefault("Http.ListenAddress", "127.0.0.1")
 	viper.SetDefault("Http.VersionMask", 0)
 	viper.SetDefault("Main.IsDebugMode", true)
 	viper.SetDefault("Database.IsDebugMode", false)
+	viper.SetDefault("Database.DSN", "data.db")
 	viper.SetDefault("Log.IsColored", true)
 }
 

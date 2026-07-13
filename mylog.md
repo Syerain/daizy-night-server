@@ -1,3 +1,5 @@
+# alpha
+
 ## todo 26-07-12 tarde
 @/internal/config/config.go
 
@@ -19,10 +21,22 @@
 @global
 
 /internal/crypto,
+
 /internal/service,
+
 /internal/config,
+
 /internal/db,
+
 /internal/model,
+
 /internal/handler,
+
 /etc
 
+## adv 26-07-13 night
+@/test/data.db
+
+temply added something for test.
+
+the /config.yaml and its included keys are just for test.

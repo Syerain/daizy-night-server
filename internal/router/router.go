@@ -1,8 +1,13 @@
 package router
 
-import "github.com/labstack/echo/v5"
+import (
+	"log/slog"
+
+	"github.com/labstack/echo/v5"
+)
 
 func New() *echo.Echo {
 	e := echo.New()
+	e.Logger = slog.Default()
 	return e
 }

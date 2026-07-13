@@ -33,7 +33,10 @@ func main() {
 	utils.InitModuleLogger(cfg.Main.IsDebugMode, "main")
 
 	// initializing crypto
-	crypto.Init(cfg)
+	err = crypto.Init(cfg)
+	if err != nil {
+		slog.Error("Failed to init Crypto module !")
+	}
 
 	// printing basic config info
 	{
@@ -45,7 +48,7 @@ func main() {
 	// <---------- service below --------->
 
 	// starting db
-	err = db.Init()
+	err = db.Init(cfg)
 	if err != nil {
 		slog.Error("FATAL:Couldnt init database !")
 	}

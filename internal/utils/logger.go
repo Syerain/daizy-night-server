@@ -30,3 +30,7 @@ func InitModuleLogger(isDebugMode bool, moduleName string) {
 
 	slog.SetDefault(logger)
 }
+
+func GetLogger() *slog.Logger {
+	return slog.Default()
+}

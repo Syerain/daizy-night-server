@@ -1,0 +1,18 @@
+Main:
+  IsDebugMode: true
+
+Http:
+  ListenPort: 4703
+  ListenAddress: "127.0.0.1"
+  VersionMask: 0
+
+Database:
+  IsDebugMode: false
+  DSN: "./test/data.db"
+
+Log:
+  IsColored: true
+
+Security:
+  Ed25519enckey: "5000a5e9ff9848eda76af157039e8dc45f9c1b51903c4fbe4c77b0964f5569a5"
+  Ed25519deckey: "0ffddcdfa28e18bca6c89cf9c440e689c57d416c26cf5e767d71512ffcffafcc"

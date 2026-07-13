@@ -22,7 +22,8 @@ type HttpConfig struct {
 }
 
 type DatabaseConfig struct {
-	IsDebugMode bool `mapstructure:"IsDebugMode"`
+	IsDebugMode bool   `mapstructure:"IsDebugMode"`
+	DSN         string `mapstructure:"DSN"`
 }
 
 type LogConfig struct {
