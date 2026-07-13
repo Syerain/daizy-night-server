@@ -12,10 +12,10 @@ server
 https://github.com/Syerain/daizy-night-server
 
 scheduled client
-https://github.com/Syerain/daizy-night-client
+https://github.com/Syerain/daizy-night-app
 
 cli test client
-https://github.com/Syerain/daizy-night-cliapp
+https://github.com/Syerain/daizy-night-appcli
 
 ## Usage
 
