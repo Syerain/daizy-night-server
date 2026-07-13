@@ -8,7 +8,7 @@ It's also my first golang project and I wished to learn something during the wor
 
 ## Repo
 
-server
+server & devCliTool
 https://github.com/Syerain/daizy-night-server
 
 scheduled client
