@@ -19,7 +19,7 @@ https://github.com/Syerain/daizy-night-cliapp
 
 ## Usage
 
-you must edit `/Config.yaml` beforge the first launch
+you must edit `./Config.yaml` beforge the first launch
 
 ## Tech stack & packages
 
