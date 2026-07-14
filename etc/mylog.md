@@ -37,6 +37,9 @@
 ## adv 26-07-13 night
 @/test/data.db
 
-temply added something for test.
+00:09 nxtd. temply added something for test. the /config.yaml and its included keys are just for test.
 
-the /config.yaml and its included keys are just for test.
+## adv 26-07-14 noon & tarde
+@global
+
+17:13 added logic of router, handler, service. did some stuff also.

@@ -57,6 +57,7 @@ func main() {
 	slog.Info("Loading HTTP server ...")
 
 	e := router.New()
+	e.Logger = utils.GetLogger()
 	addrport := fmt.Sprintf("%s:%d", cfg.Http.ListenAddress, cfg.Http.ListenPort)
 
 	slog.Info("Listening on " + addrport)
