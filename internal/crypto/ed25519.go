@@ -30,6 +30,9 @@ func Init(cfg *config.Config) error {
 }
 
 func ValidateSignature(signature string) bool {
+	if signature == "" {
+		return false
+	}
 	dateStr := time.Now().Format("20060102")
 	dateBytes := []byte(dateStr)
 	sigBytes := []byte(signature)

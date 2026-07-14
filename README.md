@@ -49,3 +49,7 @@ SQLite is a C-language library that implements a small, fast, self-contained, hi
 
 GORM, a popular ORM library for Golang, provides a flexible plugin system that allows developers to extend its functionality. 
 
+**argon2id**
+
+This package provides a convenience wrapper around Go's argon2 implementation, making it simpler to securely hash and verify passwords using Argon2.
+

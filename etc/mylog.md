@@ -43,3 +43,8 @@
 @global
 
 17:13 added logic of router, handler, service. did some stuff also.
+
+## adv 26-07-14 night
+@global
+
+20:12 added /internal/constants; stuff; adv /internal/db; added /internal/crypto/salt.go

@@ -34,6 +34,7 @@ func HandleRegister(c *echo.Context) error {
 }
 
 func buildRegisterBody(c *echo.Context) (*model.RegisterBody, error) {
+
 	var b model.RegisterBody
 	if err := c.Bind(&b); err != nil {
 		return nil, err

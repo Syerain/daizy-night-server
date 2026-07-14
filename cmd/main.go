@@ -8,6 +8,7 @@ import (
 	"daizynight/internal/utils"
 	"fmt"
 	"log/slog"
+	"net"
 	"os"
 )
 
@@ -58,7 +59,7 @@ func main() {
 
 	e := router.New()
 	e.Logger = utils.GetLogger()
-	addrport := fmt.Sprintf("%s:%d", cfg.Http.ListenAddress, cfg.Http.ListenPort)
+	addrport := net.JoinHostPort(cfg.Http.ListenAddress, fmt.Sprintf("%d", cfg.Http.ListenPort))
 
 	slog.Info("Listening on " + addrport)
 

@@ -35,3 +35,20 @@ func Init(cfg *config.Config) error {
 	DB = db
 	return nil
 }
+
+// check db health
+func CheckDB() error {
+	sql, err := DB.DB()
+	if err != nil {
+		return err
+	}
+	return sql.Ping()
+}
+
+func CloseDB() error {
+	sql, err := DB.DB()
+	if err != nil {
+		return err
+	}
+	return sql.Close()
+}

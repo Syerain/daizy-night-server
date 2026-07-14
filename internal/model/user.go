@@ -19,15 +19,15 @@ type User struct {
 	RegisterTime time.Time // differs from gorm.Model.CreatedAt
 
 	// Security:
-	Password string `gorm:"not null"`
+	SaltedPassword string `gorm:"not null"`
 
-	// Permission
+	// Permission:
 	/* notice that despite the existence of PermissionWeight,
 	still currently using legacy permission roles. */
 	IsAdmin          bool  `gorm:"not null;default:false"`
 	PermissionWeight int16 `gorm:"default:20"`
 
-	// Github OAuth
+	// Github OAuth:
 	GitHubID    int64  `gorm:"unique"`
 	GitHubLogin string `gorm:"unique"` // github login username for presentation
 }
