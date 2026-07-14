@@ -16,5 +16,5 @@ type RegisterError struct {
 }
 
 func (e *RegisterError) Error() string {
-	return "Regiester error: " + e.Message
+	return "Register error: " + e.Message
 }
