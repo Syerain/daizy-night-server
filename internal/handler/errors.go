@@ -1,10 +1,10 @@
 package handler
 
-type RegisterValidationError struct {
+type ErrRegisterValidation struct {
 	Field   string
 	Message string
 }
 
-func (e *RegisterValidationError) Error() string {
+func (e *ErrRegisterValidation) Error() string {
 	return "Validation error:" + e.Field + " - " + e.Message
 }

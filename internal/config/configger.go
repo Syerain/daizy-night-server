@@ -59,19 +59,19 @@ func validateConfig(cfg *Config) error {
 	var errs []error
 
 	if cfg.Http.ListenPort < 1 || cfg.Http.ListenPort > 65535 {
-		errs = append(errs, &ConfigValidationError{
+		errs = append(errs, &ErrConfigValidation{
 			Field:   "Http.ListenPort",
 			Message: "must be between 1 and 65535",
 		})
 	}
 	if parsedIP := net.ParseIP(cfg.Http.ListenAddress); parsedIP == nil {
-		errs = append(errs, &ConfigValidationError{
+		errs = append(errs, &ErrConfigValidation{
 			Field:   "Http.ListenAddress",
 			Message: "must be a valid IP address",
 		})
 	}
 	if cfg.Http.VersionMask < 0 {
-		errs = append(errs, &ConfigValidationError{
+		errs = append(errs, &ErrConfigValidation{
 			Field:   "Http.VersionMask",
 			Message: "must be a non-negative integer",
 		})

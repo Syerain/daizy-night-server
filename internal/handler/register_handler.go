@@ -16,12 +16,19 @@ func HandleRegister(c *echo.Context) error {
 
 	// failed to build RegisterBody
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"message": "invalid request body"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "unknown register body eror"})
+	}
+
+	// failure during param validation
+	err = ValidateRegisterParams(b)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "invalid register body that didnt pass validation"})
 	}
 
 	// execute reg service
 	if err := service.Register(b); err != nil {
-		var errReg *service.RegisterError
+		var errReg *service.ErrRegister
+		//
 		if errors.As(err, &errReg) {
 			return c.JSON(http.StatusBadRequest, map[string]string{"message": errReg.Message})
 		}
@@ -34,7 +41,6 @@ func HandleRegister(c *echo.Context) error {
 }
 
 func buildRegisterBody(c *echo.Context) (*model.RegisterBody, error) {
-
 	var b model.RegisterBody
 	if err := c.Bind(&b); err != nil {
 		return nil, err

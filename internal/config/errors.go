@@ -1,10 +1,10 @@
 package config
 
-type ConfigValidationError struct {
+type ErrConfigValidation struct {
 	Field   string
 	Message string
 }
 
-func (e *ConfigValidationError) Error() string {
+func (e *ErrConfigValidation) Error() string {
 	return "Config validation error: " + e.Field + " - " + e.Message
 }

@@ -1,20 +1,20 @@
 package service
 
 // login
-type UserLoginError struct {
+type ErrUserLogin struct {
 	User    string
 	Message string
 }
 
-func (e *UserLoginError) Error() string {
+func (e *ErrUserLogin) Error() string {
 	return "User login error: " + e.User + " - " + e.Message
 }
 
 // regiester
-type RegisterError struct {
+type ErrRegister struct {
 	Message string
 }
 
-func (e *RegisterError) Error() string {
+func (e *ErrRegister) Error() string {
 	return "Register error: " + e.Message
 }
