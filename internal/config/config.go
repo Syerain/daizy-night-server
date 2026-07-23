@@ -33,6 +33,8 @@ type LogConfig struct {
 }
 
 type SecurityConfig struct {
-	Ed25519enckey string `mapstructure:"Ed25519enckey"`
-	Ed25519deckey string `mapstructure:"Ed25519deckey"`
+	RegistercodeEnckey string `mapstructure:"RegistercodeEnckey"`
+	RegistercodeDeckey string `mapstructure:"RegistercodeDeckey"`
+	AccessTokenEnckey  string `mapstructure:"AccessTokenEnckey"`
+	AccessTokenDeckey  string `mapstructure:"AccessTokenDeckey"`
 }

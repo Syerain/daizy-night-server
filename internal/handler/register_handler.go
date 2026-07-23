@@ -22,7 +22,11 @@ func HandleRegister(c *echo.Context) error {
 	// failure during param validation
 	err = ValidateRegisterParams(b)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"message": "invalid register body that didnt pass validation"})
+		var errval *ErrRegisterValidation
+		if errors.As(err, &errval) {
+			return c.JSON(http.StatusBadRequest, map[string]string{"messgae": errval.Message})
+		}
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": err.Error()})
 	}
 
 	// execute reg service

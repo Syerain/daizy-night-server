@@ -19,7 +19,7 @@ func CreateUser(b *model.User) error {
 		if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
 			return result.Error
 		}
-		return nil
+		return result.Error
 	}
 	return nil
 }

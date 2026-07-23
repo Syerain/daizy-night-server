@@ -76,5 +76,14 @@ func validateConfig(cfg *Config) error {
 			Message: "must be a non-negative integer",
 		})
 	}
+	if cfg.Security.RegistercodeEnckey == "" ||
+		cfg.Security.RegistercodeDeckey == "" ||
+		cfg.Security.AccessTokenEnckey == "" ||
+		cfg.Security.AccessTokenDeckey == "" {
+		errs = append(errs, &ErrConfigValidation{
+			Field:   "cfg.Security",
+			Message: "keys must not be empty",
+		})
+	}
 	return errors.Join(errs...)
 }

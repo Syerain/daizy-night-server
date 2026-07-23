@@ -48,3 +48,10 @@
 @global
 
 20:12 added /internal/constants; stuff; adv /internal/db; added /internal/crypto/salt.go
+
+## adv 26-07-23
+@global
+
+23:16 不同的 registerway 所需求的参数不一，但不论如何 validate 函数都始终忠实地校验并上报每一个问题，
+根据具体 registerway 判断所需参数，这是调用者的任务
+
