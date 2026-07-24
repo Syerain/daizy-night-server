@@ -24,7 +24,7 @@ func Register(b *model.RegisterBody) error {
 
 	//
 	switch b.Registerway {
-	case constants.Legacy:
+	case constants.RegisterLegacy:
 		err = db.CreateUser(&model.User{
 			Username:       b.Username,
 			Nickname:       b.Nickname,
@@ -38,9 +38,13 @@ func Register(b *model.RegisterBody) error {
 			}
 			return err
 		}
-	case constants.Github:
+	case constants.RegisterGithub:
 		return nil
 	}
 
 	return nil
+}
+
+func Login(username string, password string) {
+
 }

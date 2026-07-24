@@ -15,7 +15,9 @@ Log:
 
 # the keys below are just for test and for convenience they will also be uploaded to remote repo
 Security:
-  RegitsercodeEnckey: "5000a5e9ff9848eda76af157039e8dc45f9c1b51903c4fbe4c77b0964f5569a5"
+  RegistercodeEnckey: "5000a5e9ff9848eda76af157039e8dc45f9c1b51903c4fbe4c77b0964f5569a5"
   RegistercodeDeckey: "0ffddcdfa28e18bca6c89cf9c440e689c57d416c26cf5e767d71512ffcffafcc"
+  PasswordEnckey: "623b37285bd2ef96082629404c0319c418e4cf44a4f1dc1657b9eb6f5059dc49"
+  PasswordDeckey: "a70e530f6e65873f9a33a755f9c1206e22bcd571dba78492fa8554ae773de655"
   AccessTokenEnckey: "75832cdbc076629d72920dda4dd4265694cedcdcdb59e115b1148eb96b9d7e78"
   AccessTokenDeckey: "c6c6eb3f2ecb87e6fd63b6bced914314c4a00eb729f74289b22cd47bb047ab3b"

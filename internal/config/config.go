@@ -1,5 +1,7 @@
 package config
 
+import "time"
+
 // Config struct holds the configuration for the server
 /* Notice that server configuration differs from client's despite they share the same name. */
 type Config struct {
@@ -19,6 +21,9 @@ type HttpConfig struct {
 	/* VersionMask is used to tell the server which versions of client request are appropriate to use.
 	a request with a version number smaller than the VersionMask will be rejected by the server. */
 	VersionMask int `mapstructure:"VersionMask"`
+	// use format like 1m30s and viper can read it
+	JwtAccessTokenOutdateTime  time.Duration `mapstructure:"JwtAccessTokenOutdateTime"`
+	JwtRefreshTokenOutdateTime time.Duration `mapstructure:"JwtRefreshTokenOutdateTime"`
 }
 
 type DatabaseConfig struct {
@@ -35,6 +40,8 @@ type LogConfig struct {
 type SecurityConfig struct {
 	RegistercodeEnckey string `mapstructure:"RegistercodeEnckey"`
 	RegistercodeDeckey string `mapstructure:"RegistercodeDeckey"`
+	PasswordEnckey     string `mapstructure:"PasswordEnckey"`
+	PasswordDeckey     string `mapstructure:"PasswordDeckey"`
 	AccessTokenEnckey  string `mapstructure:"AccessTokenEnckey"`
 	AccessTokenDeckey  string `mapstructure:"AccessTokenDeckey"`
 }

@@ -9,6 +9,7 @@ import (
 type User struct {
 	gorm.Model
 	// basic things:
+	Atomid       int    `gorm:"unique;not null"`
 	Username     string `gorm:"unique;not null"`
 	Nickname     string `gorm:"unique;not null"`
 	Email        string

@@ -9,5 +9,13 @@ type RegisterBody struct {
 	Nickname     string
 	Password     string
 	Registercode string
-	Registerway  constants.RegisterWay
+	Registerway  constants.Registerway
+}
+
+type LoginBody struct {
+	Loginway  constants.Loginway
+	Username  string
+	Atomid    string
+	Password  string
+	Entrycode string
 }

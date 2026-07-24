@@ -1,8 +1,14 @@
 package constants
 
-type RegisterWay string
+type Registerway string
+type Loginway string
 
 const (
-	Legacy RegisterWay = "legacy"
-	Github RegisterWay = "oauth-github"
+	RegisterLegacy Registerway = "legacy"
+	RegisterGithub Registerway = "oauth-github"
+)
+
+const (
+	LoginLegacy Loginway = "legacy"
+	LoginGithub Loginway = "oauth-github"
 )
