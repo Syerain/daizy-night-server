@@ -20,13 +20,7 @@ func main() {
 	}
 
 	// initializing Global Config
-	err := config.InitConfig()
-	if err != nil {
-		slog.Error("FATAL: Failed to initialize config", "error", err)
-		return
-	}
-
-	cfg := config.GetConfig()
+	cfg := config.MustLoadConfig()
 
 	// <--------- configuration below --------->
 
@@ -34,7 +28,7 @@ func main() {
 	utils.InitModuleLogger(cfg.Main.IsDebugMode, "main")
 
 	// initializing crypto
-	err = crypto.Init(cfg)
+	err := crypto.Init(cfg)
 	if err != nil {
 		slog.Error("Failed to init Crypto module !")
 	}
