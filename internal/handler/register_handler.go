@@ -24,7 +24,7 @@ func HandleRegister(c *echo.Context) error {
 	if err != nil {
 		var errval *ErrRegisterValidation
 		if errors.As(err, &errval) {
-			return c.JSON(http.StatusBadRequest, map[string]string{"messgae": errval.Message})
+			return c.JSON(http.StatusBadRequest, map[string]string{"message": errval.Message})
 		}
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": err.Error()})
 	}

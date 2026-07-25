@@ -5,6 +5,8 @@ Http:
   ListenPort: 4703
   ListenAddress: "127.0.0.1"
   VersionMask: 0
+  JwtAccessTokenExpireTime: 15m
+  JwtRefreshTokenExpireTime: 7d
 
 Database:
   IsDebugMode: false
@@ -19,5 +21,7 @@ Security:
   RegistercodeDeckey: "0ffddcdfa28e18bca6c89cf9c440e689c57d416c26cf5e767d71512ffcffafcc"
   PasswordEnckey: "623b37285bd2ef96082629404c0319c418e4cf44a4f1dc1657b9eb6f5059dc49"
   PasswordDeckey: "a70e530f6e65873f9a33a755f9c1206e22bcd571dba78492fa8554ae773de655"
-  AccessTokenEnckey: "75832cdbc076629d72920dda4dd4265694cedcdcdb59e115b1148eb96b9d7e78"
-  AccessTokenDeckey: "c6c6eb3f2ecb87e6fd63b6bced914314c4a00eb729f74289b22cd47bb047ab3b"
+  JwtAccessTokenEnckey: "75832cdbc076629d72920dda4dd4265694cedcdcdb59e115b1148eb96b9d7e78"
+  JwtAccessTokenDeckey: "c6c6eb3f2ecb87e6fd63b6bced914314c4a00eb729f74289b22cd47bb047ab3b"
+  JwtRefreshTokenEnckey: "501390e964e0e975254ef9eac5488d6869938c02be43fa978c9dcd142a4c0edb"
+  JwtRefreshTokenDeckey: "19cd8a508269ce3951e1bb0e468a8455af08fda48696176a164ea747255150b0"

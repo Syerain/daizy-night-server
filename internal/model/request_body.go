@@ -15,7 +15,7 @@ type RegisterBody struct {
 type LoginBody struct {
 	Loginway  constants.Loginway
 	Username  string
-	Atomid    string
+	Atomid    int
 	Password  string
 	Entrycode string
 }

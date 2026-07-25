@@ -39,6 +39,9 @@ func main() {
 		slog.Error("Failed to init Crypto module !")
 	}
 
+	// initializing jwt
+	crypto.InitJwt(cfg)
+
 	// printing basic config info
 	{
 		slog.Info("Debug Mode:", slog.Bool("debug", cfg.Main.IsDebugMode))

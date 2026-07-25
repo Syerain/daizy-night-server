@@ -2,6 +2,7 @@ package db
 
 import (
 	"daizynight/internal/model"
+	"daizynight/internal/utils"
 	"errors"
 	"time"
 
@@ -46,4 +47,40 @@ func GetUserByAtomid(id int) (*model.User, error) {
 		return nil, result.Error
 	}
 	return &user, nil
+}
+
+func SaveRefreshToken(atomid int, rawToken string) error {
+	hash, err := utils.SaltMix(rawToken)
+	if err != nil {
+		return err
+	}
+	return DB.Create(&model.RefreshToken{
+		Atomid:    atomid,
+		TokenHash: hash,
+	}).Error
+}
+
+func GetRefreshToken(atomid int, rawToken string) (bool, error) {
+	var tokens []model.RefreshToken
+	result := DB.Where("atomid = ? AND revoked_at IS NULL", atomid).Find(&tokens)
+	if result.Error != nil {
+		return false, result.Error
+	}
+	for _, t := range tokens {
+		matched, err := utils.SaltVerify(rawToken, t.TokenHash)
+		if err != nil {
+			return false, err
+		}
+		if matched {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func RevokeUserTokens(atomid int) error {
+	now := time.Now()
+	return DB.Model(&model.RefreshToken{}).
+		Where("atomid = ? AND revoked_at IS NULL", atomid).
+		Update("revoked_at", now).Error
 }

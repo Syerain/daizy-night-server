@@ -29,7 +29,7 @@ func Init(cfg *config.Config) error {
 	if err != nil {
 		return err
 	}
-	if err := db.AutoMigrate(&model.User{}); err != nil {
+	if err := db.AutoMigrate(&model.User{}, &model.RefreshToken{}); err != nil {
 		return err
 	}
 	DB = db

@@ -43,7 +43,7 @@ func ValidateRegisterParams(b *model.RegisterBody) error {
 	}
 
 	// registercode
-	if !crypto.ValidateSignature(b.Registercode) {
+	if !crypto.ValidateRegistercode(b.Registercode) {
 		return &ErrRegisterValidation{Field: "registercode", Message: "invalid format or outdated registercode", Type: InvalidRegistercode}
 	}
 

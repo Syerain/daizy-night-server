@@ -22,8 +22,8 @@ type HttpConfig struct {
 	a request with a version number smaller than the VersionMask will be rejected by the server. */
 	VersionMask int `mapstructure:"VersionMask"`
 	// use format like 1m30s and viper can read it
-	JwtAccessTokenOutdateTime  time.Duration `mapstructure:"JwtAccessTokenOutdateTime"`
-	JwtRefreshTokenOutdateTime time.Duration `mapstructure:"JwtRefreshTokenOutdateTime"`
+	JwtAccessTokenExpireTime  time.Duration `mapstructure:"JwtAccessTokenExpireTime"`
+	JwtRefreshTokenExpireTime time.Duration `mapstructure:"JwtRefreshTokenExpireTime"`
 }
 
 type DatabaseConfig struct {
@@ -38,10 +38,12 @@ type LogConfig struct {
 }
 
 type SecurityConfig struct {
-	RegistercodeEnckey string `mapstructure:"RegistercodeEnckey"`
-	RegistercodeDeckey string `mapstructure:"RegistercodeDeckey"`
-	PasswordEnckey     string `mapstructure:"PasswordEnckey"`
-	PasswordDeckey     string `mapstructure:"PasswordDeckey"`
-	AccessTokenEnckey  string `mapstructure:"AccessTokenEnckey"`
-	AccessTokenDeckey  string `mapstructure:"AccessTokenDeckey"`
+	RegistercodeEnckey    string `mapstructure:"RegistercodeEnckey"`
+	RegistercodeDeckey    string `mapstructure:"RegistercodeDeckey"`
+	PasswordEnckey        string `mapstructure:"PasswordEnckey"`
+	PasswordDeckey        string `mapstructure:"PasswordDeckey"`
+	JwtAccessTokenEnckey  string `mapstructure:"JwtAccessTokenEnckey"`
+	JwtAccessTokenDeckey  string `mapstructure:"JwtAccessTokenDeckey"`
+	JwtRefreshTokenEnckey string `mapstructure:"JwtRefreshTokenEnckey"`
+	JwtRefreshTokenDeckey string `mapstructure:"JwtRefreshTokenDeckey"`
 }

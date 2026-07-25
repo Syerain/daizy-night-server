@@ -78,8 +78,10 @@ func validateConfig(cfg *Config) error {
 	}
 	if cfg.Security.RegistercodeEnckey == "" ||
 		cfg.Security.RegistercodeDeckey == "" ||
-		cfg.Security.AccessTokenEnckey == "" ||
-		cfg.Security.AccessTokenDeckey == "" {
+		cfg.Security.JwtAccessTokenEnckey == "" ||
+		cfg.Security.JwtAccessTokenDeckey == "" ||
+		cfg.Security.JwtRefreshTokenEnckey == "" ||
+		cfg.Security.JwtRefreshTokenDeckey == "" {
 		errs = append(errs, &ErrConfigValidation{
 			Field:   "cfg.Security",
 			Message: "keys must not be empty",
