@@ -45,8 +45,8 @@ func main() {
 	// printing basic config info
 	{
 		slog.Info("Debug Mode:", slog.Bool("debug", cfg.Main.IsDebugMode))
-		slog.Info("Config listen port: " + fmt.Sprintf("%d", cfg.Http.ListenPort))
-		slog.Info("Config listen address: " + cfg.Http.ListenAddress)
+		slog.Info("Config listen port: " + fmt.Sprintf("%d", cfg.Http.Port))
+		slog.Info("Config listen address: " + cfg.Http.Address)
 	}
 
 	// <---------- service below --------->
@@ -62,7 +62,7 @@ func main() {
 
 	e := router.New()
 	e.Logger = utils.GetLogger()
-	addrport := net.JoinHostPort(cfg.Http.ListenAddress, fmt.Sprintf("%d", cfg.Http.ListenPort))
+	addrport := net.JoinHostPort(cfg.Http.Address, fmt.Sprintf("%d", cfg.Http.Port))
 
 	slog.Info("Listening on " + addrport)
 

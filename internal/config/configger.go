@@ -25,10 +25,10 @@ func InitConfig() error {
 	// viper setting default values.
 	setDefaults()
 
-	// trying to read in config file and validate then.
+	// trying to read in config.yaml and validate then.
 	// any errors will be throwed upward.
 	if err := viper.ReadInConfig(); err != nil {
-		slog.Warn("Failed to read Config file. Using default config values.")
+		slog.Warn("Failed to read config.yaml. Using default config values.")
 	}
 	var cfg Config
 	if err := viper.Unmarshal(&cfg); err != nil {
@@ -58,22 +58,16 @@ func setDefaults() {
 func validateConfig(cfg *Config) error {
 	var errs []error
 
-	if cfg.Http.ListenPort < 1 || cfg.Http.ListenPort > 65535 {
+	if cfg.Http.Port < 1 || cfg.Http.Port > 65535 {
 		errs = append(errs, &ErrConfigValidation{
 			Field:   "Http.ListenPort",
 			Message: "must be between 1 and 65535",
 		})
 	}
-	if parsedIP := net.ParseIP(cfg.Http.ListenAddress); parsedIP == nil {
+	if parsedIP := net.ParseIP(cfg.Http.Address); parsedIP == nil {
 		errs = append(errs, &ErrConfigValidation{
 			Field:   "Http.ListenAddress",
 			Message: "must be a valid IP address",
-		})
-	}
-	if cfg.Http.VersionMask < 0 {
-		errs = append(errs, &ErrConfigValidation{
-			Field:   "Http.VersionMask",
-			Message: "must be a non-negative integer",
 		})
 	}
 	if cfg.Security.RegistercodeEnckey == "" ||
