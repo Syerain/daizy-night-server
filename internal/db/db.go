@@ -13,11 +13,11 @@ import (
 var DB *gorm.DB
 
 func Init(cfg *config.Config) error {
-	// adapte gorm logger
 	logLevel := logger.Warn
 	if cfg.Database.IsDebugMode {
 		logLevel = logger.Info
 	}
+
 	gormLogger := logger.NewSlogLogger(slog.Default(), logger.Config{
 		LogLevel: logLevel,
 	})
@@ -29,9 +29,11 @@ func Init(cfg *config.Config) error {
 	if err != nil {
 		return err
 	}
+
 	if err := db.AutoMigrate(&model.User{}, &model.RefreshToken{}); err != nil {
 		return err
 	}
+
 	DB = db
 	return nil
 }

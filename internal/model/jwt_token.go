@@ -8,7 +8,7 @@ import (
 
 type RefreshToken struct {
 	gorm.Model
-	Atomid    int    `gorm:"not null"`
+	AtomID    int    `gorm:"not null"`
 	TokenHash string `gorm:"unique; not null"`
 	RevokedAt *time.Time
 }

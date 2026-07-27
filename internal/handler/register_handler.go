@@ -12,7 +12,7 @@ import (
 /* shit hill 's first show XD */
 
 func HandleRegister(c *echo.Context) error {
-	b, err := buildRegisterBody(c)
+	b, err := Bind[model.RegisterBody](c)
 
 	// failed to build RegisterBody
 	if err != nil {
@@ -44,8 +44,8 @@ func HandleRegister(c *echo.Context) error {
 
 }
 
-func buildRegisterBody(c *echo.Context) (*model.RegisterBody, error) {
-	var b model.RegisterBody
+func Bind[T any](c *echo.Context) (*T, error) {
+	var b T
 	if err := c.Bind(&b); err != nil {
 		return nil, err
 	}

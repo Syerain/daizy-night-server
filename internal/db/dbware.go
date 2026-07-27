@@ -39,7 +39,7 @@ func GetUserByUsername(name string) (*model.User, error) {
 
 func GetUserByAtomid(id int) (*model.User, error) {
 	var user model.User
-	result := DB.Where(&model.User{Atomid: id}).First(&user)
+	result := DB.Where(&model.User{AtomID: id}).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -50,12 +50,12 @@ func GetUserByAtomid(id int) (*model.User, error) {
 }
 
 func SaveRefreshToken(atomid int, rawToken string) error {
-	hash, err := utils.SaltMix(rawToken)
+	hash, err := utils.HashCreate(rawToken)
 	if err != nil {
 		return err
 	}
 	return DB.Create(&model.RefreshToken{
-		Atomid:    atomid,
+		AtomID:    atomid,
 		TokenHash: hash,
 	}).Error
 }
@@ -67,7 +67,7 @@ func GetRefreshToken(atomid int, rawToken string) (bool, error) {
 		return false, result.Error
 	}
 	for _, t := range tokens {
-		matched, err := utils.SaltVerify(rawToken, t.TokenHash)
+		matched, err := utils.HashVerify(rawToken, t.TokenHash)
 		if err != nil {
 			return false, err
 		}

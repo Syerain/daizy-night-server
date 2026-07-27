@@ -7,6 +7,7 @@ import (
 	"daizynight/internal/router"
 	"daizynight/internal/utils"
 	"fmt"
+	"log"
 	"log/slog"
 	"net"
 	"os"
@@ -30,7 +31,7 @@ func main() {
 	// initializing crypto
 	err := crypto.Init(cfg)
 	if err != nil {
-		slog.Error("Failed to init Crypto module !")
+		log.Fatal(err.Error())
 	}
 
 	// initializing jwt
@@ -38,9 +39,8 @@ func main() {
 
 	// printing basic config info
 	{
-		slog.Info("Debug Mode:", slog.Bool("debug", cfg.Main.IsDebugMode))
-		slog.Info("Config listen port: " + fmt.Sprintf("%d", cfg.Http.Port))
-		slog.Info("Config listen address: " + cfg.Http.Address)
+		slog.Info("Debug Mode:", slog.Bool("enabled", cfg.Main.IsDebugMode))
+		slog.Info("Listening", "address", cfg.Http.Address, "port", cfg.Http.Port)
 	}
 
 	// <---------- service below --------->
@@ -48,7 +48,7 @@ func main() {
 	// starting db
 	err = db.Init(cfg)
 	if err != nil {
-		slog.Error("FATAL:Couldnt init database !")
+		log.Fatal("FATAL:Couldnt init database !")
 	}
 
 	// loading Echo engine
