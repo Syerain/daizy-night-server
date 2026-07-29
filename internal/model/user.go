@@ -1,6 +1,7 @@
 package model
 
 import (
+	"daizynight/internal/constants"
 	"time"
 
 	"gorm.io/gorm"
@@ -8,27 +9,28 @@ import (
 
 type User struct {
 	gorm.Model
-	// basic things:
-	Atomid       int    `gorm:"unique;not null"`
+	AtomID       int    `gorm:"unique;not null"`
 	Username     string `gorm:"unique;not null"`
-	Nickname     string `gorm:"unique;not null"`
-	Email        string
-	Tele         string
-	Registercode string `gorm:"unique;not null"`
+	Nickname     string `gorm:"not null"`
+	Email        string `gorm:"not null"`
+	Telephone    string
+	Registercode RegisterCode[]
 
-	// time related:
-	RegisterTime time.Time // differs from gorm.Model.CreatedAt
+	RegisterTime time.Time
 
-	// Security:
-	SaltedPassword string `gorm:"not null"`
+	PasswordHash string `gorm:"not null" json:"-"`
 
-	// Permission:
-	/* notice that despite the existence of PermissionWeight,
-	still currently using legacy permission roles. */
-	IsAdmin          bool  `gorm:"not null;default:false"`
-	PermissionWeight int16 `gorm:"default:20"`
+	Role constants.Role `gorm:"not null;default:'user'"`
 
 	// Github OAuth:
 	GitHubID    int64  `gorm:"unique"`
 	GitHubLogin string `gorm:"unique"` // github login username for presentation
+}
+
+type RegisterCode struct {
+	gorm.Model
+
+	AtomID int `gorm:"not null"`
+	Code   string
+	Before time.Time
 }

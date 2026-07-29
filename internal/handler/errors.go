@@ -28,9 +28,10 @@ func (t errType) Say() string {
 }
 
 type ErrRegisterValidation struct {
-	Field   string
-	Message string
-	Type    errType
+	StatusCode int
+	Field      string
+	Message    string
+	Type       errType
 }
 
 func (e *ErrRegisterValidation) Error() string {

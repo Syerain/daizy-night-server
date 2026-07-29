@@ -17,7 +17,7 @@ func Register(b *model.RegisterBody) error {
 	slog.Info("service processing register ...")
 
 	// salt psw
-	saltedPsw, err := utils.SaltMix(b.Password)
+	passwordHash, err := utils.HashCreate(b.Password)
 	if err != nil {
 		slog.Error(err.Error())
 		return err
@@ -27,10 +27,10 @@ func Register(b *model.RegisterBody) error {
 	switch b.Registerway {
 	case constants.RegisterLegacy:
 		err = db.CreateUser(&model.User{
-			Username:       b.Username,
-			Nickname:       b.Nickname,
-			SaltedPassword: saltedPsw,
-			Registercode:   b.Registercode,
+			Username:     b.Username,
+			Nickname:     b.Nickname,
+			PasswordHash: passwordHash,
+			Registercode: b.Registercode,
 		})
 		if err != nil {
 			slog.Error(err.Error())
@@ -41,6 +41,8 @@ func Register(b *model.RegisterBody) error {
 		}
 	case constants.RegisterGithub:
 		return nil
+	default:
+		panic("unreachable")
 	}
 
 	return nil
@@ -56,7 +58,7 @@ func Login(b model.LoginBody) (success bool, accessToken string, refreshToken st
 				if err != nil {
 					return false, "", "", err
 				}
-				matched, err := crypto.ValidateSaltedPassword(b.Password, user.SaltedPassword)
+				matched, err := crypto.ValidateSaltedPassword(b.Password, user.PasswordHash)
 				if err != nil {
 					return false, "", "", err
 				}
@@ -64,13 +66,13 @@ func Login(b model.LoginBody) (success bool, accessToken string, refreshToken st
 					return false, "", "", nil
 				}
 
-				payloadAccessToken := crypto.AccessTokenPayload{
-					Atomid:   user.Atomid,
+				payloadAccessToken := crypto.JwtAccessTokenPayload{
+					AtomID:   user.AtomID,
 					Username: user.Username,
-					IsAdmin:  user.IsAdmin,
+					Role:     user.Role,
 				}
-				payloadRefreshToken := crypto.RefreshTokenPayload{
-					Atomid:   user.Atomid,
+				payloadRefreshToken := crypto.JwtRefreshTokenPayload{
+					AtomID:   user.AtomID,
 					Username: user.Username,
 				}
 
@@ -86,7 +88,7 @@ func Login(b model.LoginBody) (success bool, accessToken string, refreshToken st
 					return false, "", "", err
 				}
 
-				if err := db.SaveRefreshToken(user.Atomid, refreshToken); err != nil {
+				if err := db.SaveRefreshToken(user.AtomID, refreshToken); err != nil {
 					slog.Error(err.Error())
 					return false, "", "", err
 				}
@@ -112,15 +114,15 @@ func RefreshAccessToken(rawToken string) (success bool, accessToken string, refr
 		return false, "", "", err
 	}
 
-	valid, err := db.GetRefreshToken(payload.Atomid, rawToken)
+	valid, err := db.GetRefreshToken(payload.AtomID, rawToken)
 	if err != nil || !valid {
 		return false, "", "", err
 	}
 
-	db.RevokeUserTokens(payload.Atomid)
+	db.RevokeUserTokens(payload.AtomID)
 
-	payloadAccess := crypto.AccessTokenPayload{
-		Atomid:   payload.Atomid,
+	payloadAccess := crypto.JwtAccessTokenPayload{
+		AtomID:   payload.AtomID,
 		Username: payload.Username,
 	}
 	accessToken, err = crypto.SignAccessToken(payloadAccess)
@@ -128,8 +130,8 @@ func RefreshAccessToken(rawToken string) (success bool, accessToken string, refr
 		return false, "", "", err
 	}
 
-	payloadRefresh := crypto.RefreshTokenPayload{
-		Atomid:   payload.Atomid,
+	payloadRefresh := crypto.JwtRefreshTokenPayload{
+		AtomID:   payload.AtomID,
 		Username: payload.Username,
 	}
 	refreshToken, err = crypto.SignRefreshToken(payloadRefresh)
@@ -137,6 +139,6 @@ func RefreshAccessToken(rawToken string) (success bool, accessToken string, refr
 		return false, "", "", err
 	}
 
-	db.SaveRefreshToken(payload.Atomid, refreshToken)
+	db.SaveRefreshToken(payload.AtomID, refreshToken)
 	return true, accessToken, refreshToken, nil
 }

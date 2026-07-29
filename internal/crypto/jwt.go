@@ -2,6 +2,7 @@ package crypto
 
 import (
 	"daizynight/internal/config"
+	"daizynight/internal/constants"
 
 	"time"
 
@@ -16,38 +17,38 @@ func InitJwt(cfg *config.Config) {
 	refreshTokenExpireTime = cfg.Http.JwtRefreshTokenExpireTime
 }
 
-type AccessTokenPayload struct {
+type JwtAccessTokenPayload struct {
+	jwt.RegisteredClaims
+
 	// business
-	Atomid   int    `json:"atomid"`
-	Username string `json:"username"`
-	IsAdmin  bool   `json:"isadmin"`
-
-	// jwt attrs
-	jwt.RegisteredClaims
+	AtomID   int            `json:"atomid"`
+	Username string         `json:"username"`
+	Role     constants.Role `json:"role"`
 }
 
-type RefreshTokenPayload struct {
-	Atomid   int    `json:"atomid"`
-	Username string `json:"username"`
+type JwtRefreshTokenPayload struct {
 	jwt.RegisteredClaims
+
+	AtomID   int    `json:"atomid"`
+	Username string `json:"username"`
 }
 
-func SignAccessToken(payload AccessTokenPayload) (string, error) {
+func SignAccessToken(payload JwtAccessTokenPayload) (string, error) {
 	payload.ExpiresAt = jwt.NewNumericDate(time.Now().Add(accessTokenExpireTime))
 	payload.IssuedAt = jwt.NewNumericDate(time.Now())
 	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, payload)
 	return token.SignedString(jwtAccessTokenEnckey)
 }
 
-func SignRefreshToken(payload RefreshTokenPayload) (string, error) {
+func SignRefreshToken(payload JwtRefreshTokenPayload) (string, error) {
 	payload.ExpiresAt = jwt.NewNumericDate(time.Now().Add(refreshTokenExpireTime))
 	payload.IssuedAt = jwt.NewNumericDate(time.Now())
 	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, payload)
 	return token.SignedString(jwtAccessTokenEnckey)
 }
 
-func VerifyAccessToken(tokenStr string) (*AccessTokenPayload, error) {
-	var payload AccessTokenPayload
+func VerifyAccessToken(tokenStr string) (*JwtAccessTokenPayload, error) {
+	var payload JwtAccessTokenPayload
 	token, err := jwt.ParseWithClaims(tokenStr, &payload, func(t *jwt.Token) (interface{}, error) {
 		return jwtAccessTokenDeckey, nil
 	})
@@ -57,8 +58,8 @@ func VerifyAccessToken(tokenStr string) (*AccessTokenPayload, error) {
 	return &payload, nil
 }
 
-func VerifyRefreshToken(tokenStr string) (*RefreshTokenPayload, error) {
-	var payload RefreshTokenPayload
+func VerifyRefreshToken(tokenStr string) (*JwtRefreshTokenPayload, error) {
+	var payload JwtRefreshTokenPayload
 	token, err := jwt.ParseWithClaims(tokenStr, &payload, func(t *jwt.Token) (interface{}, error) {
 		return jwtRefreshTokenDeckey, nil
 	})
