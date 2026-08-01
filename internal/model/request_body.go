@@ -1,7 +1,7 @@
 package model
 
 import (
-	"daizynight/internal/constants"
+	"github.com/atomreforge/dnserver/internal/constants"
 )
 
 type RegisterBody struct {

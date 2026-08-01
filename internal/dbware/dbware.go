@@ -1,10 +1,11 @@
 package dbware
 
 import (
-	"daizynight/internal/model"
-	"daizynight/internal/utils"
 	"errors"
 	"time"
+
+	"github.com/atomreforge/dnserver/internal/model"
+	"github.com/atomreforge/dnserver/internal/utils"
 
 	"gorm.io/gorm"
 )

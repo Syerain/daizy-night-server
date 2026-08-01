@@ -1,8 +1,9 @@
 package dbware
 
 import (
-	"daizynight/internal/model"
 	"log/slog"
+
+	"github.com/atomreforge/dnserver/internal/model"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

@@ -1,13 +1,14 @@
 package service
 
 import (
-	abstract "daizynight/internal/abstract/interface"
-	"daizynight/internal/constants"
-	"daizynight/internal/crypto"
-	"daizynight/internal/model"
-	"daizynight/internal/utils"
 	"errors"
 	"log/slog"
+
+	abstract "github.com/atomreforge/dnserver/internal/abstract/interface"
+	"github.com/atomreforge/dnserver/internal/constants"
+	"github.com/atomreforge/dnserver/internal/crypto"
+	"github.com/atomreforge/dnserver/internal/model"
+	"github.com/atomreforge/dnserver/internal/utils"
 
 	"gorm.io/gorm"
 )

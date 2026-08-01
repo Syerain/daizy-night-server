@@ -2,12 +2,13 @@ package crypto
 
 import (
 	"crypto/ed25519"
-	"daizynight/internal/model"
 	"encoding/hex"
 	"encoding/json"
 	"log/slog"
 	"strings"
 	"time"
+
+	"github.com/atomreforge/dnserver/internal/model"
 )
 
 func (p *ProviderCrypto) SignRegistercode(payload model.RegistercodePayload) (

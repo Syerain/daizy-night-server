@@ -1,8 +1,9 @@
 package model
 
 import (
-	"daizynight/internal/constants"
 	"time"
+
+	"github.com/atomreforge/dnserver/internal/constants"
 
 	"gorm.io/gorm"
 )

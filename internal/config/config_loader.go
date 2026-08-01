@@ -1,6 +1,6 @@
 package config
 
-import "daizynight/internal/utils/confx"
+import "github.com/atomreforge/confx"
 
 // MustLoadConfig panics when encountering errors.
 func MustLoadConfig() *Config {

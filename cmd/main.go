@@ -1,17 +1,18 @@
 package main
 
 import (
-	"daizynight/internal/config"
-	"daizynight/internal/crypto"
-	"daizynight/internal/dbware"
-	"daizynight/internal/handler"
-	"daizynight/internal/router"
-	"daizynight/internal/service"
-	"daizynight/internal/utils"
 	"fmt"
 	"log/slog"
 	"net"
 	"os"
+
+	"github.com/atomreforge/dnserver/internal/config"
+	"github.com/atomreforge/dnserver/internal/crypto"
+	"github.com/atomreforge/dnserver/internal/dbware"
+	"github.com/atomreforge/dnserver/internal/handler"
+	"github.com/atomreforge/dnserver/internal/router"
+	"github.com/atomreforge/dnserver/internal/service"
+	"github.com/atomreforge/dnserver/internal/utils"
 
 	"github.com/labstack/echo/v5"
 )

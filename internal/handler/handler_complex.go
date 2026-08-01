@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"daizynight/internal/service"
+	"github.com/atomreforge/dnserver/internal/service"
 )
 
 type HandlerComplex struct {

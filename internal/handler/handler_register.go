@@ -1,10 +1,11 @@
 package handler
 
 import (
-	"daizynight/internal/model"
-	"daizynight/internal/service"
 	"errors"
 	"net/http"
+
+	"github.com/atomreforge/dnserver/internal/model"
+	"github.com/atomreforge/dnserver/internal/service"
 
 	"github.com/labstack/echo/v5"
 )

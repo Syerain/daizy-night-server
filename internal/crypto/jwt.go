@@ -2,10 +2,11 @@ package crypto
 
 import (
 	"crypto/ed25519"
-	"daizynight/internal/config"
-	"daizynight/internal/model"
-	"daizynight/internal/utils"
 	"errors"
+
+	"github.com/atomreforge/dnserver/internal/config"
+	"github.com/atomreforge/dnserver/internal/model"
+	"github.com/atomreforge/dnserver/internal/utils"
 
 	"time"
 

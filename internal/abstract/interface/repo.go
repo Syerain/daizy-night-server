@@ -1,7 +1,7 @@
 package abstract
 
 import (
-	"daizynight/internal/model"
+	"github.com/atomreforge/dnserver/internal/model"
 )
 
 type InterfaceUserRepo interface {

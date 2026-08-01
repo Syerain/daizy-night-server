@@ -1,8 +1,9 @@
 package handler
 
 import (
-	"daizynight/internal/model"
 	"unicode/utf8"
+
+	"github.com/atomreforge/dnserver/internal/model"
 )
 
 /* you mustn't trust frontend completely XD */
