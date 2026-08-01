@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/atomreforge/dnserver/internal/model"
+	"github.com/atomreforge/daizy-night-server/internal/model"
 )
 
 func (p *ProviderCrypto) SignRegistercode(payload model.RegistercodePayload) (

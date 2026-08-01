@@ -1,7 +1,7 @@
 package router
 
 import (
-	"github.com/atomreforge/dnserver/internal/handler"
+	"github.com/atomreforge/daizy-night-server/internal/handler"
 
 	"github.com/labstack/echo/v5"
 )

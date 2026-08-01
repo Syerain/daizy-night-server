@@ -1,9 +1,10 @@
-module github.com/atomreforge/dnserver
+module github.com/atomreforge/daizy-night-server
 
 go 1.26.4
 
 require (
 	github.com/alexedwards/argon2id v1.0.0
+	github.com/atomreforge/confx v1.0.1
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/labstack/echo/v5 v5.3.0
 	github.com/pwntr/tinter v1.2.0
@@ -12,7 +13,6 @@ require (
 )
 
 require (
-	github.com/atomreforge/confx v1.0.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
@@ -28,7 +28,6 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/mattn/go-sqlite3 v1.14.47 // indirect
-	github.com/oy3o/conf v1.4.4
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect

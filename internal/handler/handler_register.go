@@ -4,8 +4,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/atomreforge/dnserver/internal/model"
-	"github.com/atomreforge/dnserver/internal/service"
+	"github.com/atomreforge/daizy-night-server/internal/model"
+	"github.com/atomreforge/daizy-night-server/internal/service"
 
 	"github.com/labstack/echo/v5"
 )

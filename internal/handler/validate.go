@@ -3,7 +3,7 @@ package handler
 import (
 	"unicode/utf8"
 
-	"github.com/atomreforge/dnserver/internal/model"
+	"github.com/atomreforge/daizy-night-server/internal/model"
 )
 
 /* you mustn't trust frontend completely XD */

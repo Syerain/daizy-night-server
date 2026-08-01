@@ -6,13 +6,13 @@ import (
 	"net"
 	"os"
 
-	"github.com/atomreforge/dnserver/internal/config"
-	"github.com/atomreforge/dnserver/internal/crypto"
-	"github.com/atomreforge/dnserver/internal/dbware"
-	"github.com/atomreforge/dnserver/internal/handler"
-	"github.com/atomreforge/dnserver/internal/router"
-	"github.com/atomreforge/dnserver/internal/service"
-	"github.com/atomreforge/dnserver/internal/utils"
+	"github.com/atomreforge/daizy-night-server/internal/config"
+	"github.com/atomreforge/daizy-night-server/internal/crypto"
+	"github.com/atomreforge/daizy-night-server/internal/dbware"
+	"github.com/atomreforge/daizy-night-server/internal/handler"
+	"github.com/atomreforge/daizy-night-server/internal/router"
+	"github.com/atomreforge/daizy-night-server/internal/service"
+	"github.com/atomreforge/daizy-night-server/internal/utils"
 
 	"github.com/labstack/echo/v5"
 )

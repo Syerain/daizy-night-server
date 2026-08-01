@@ -4,9 +4,9 @@ import (
 	"crypto/ed25519"
 	"errors"
 
-	"github.com/atomreforge/dnserver/internal/config"
-	"github.com/atomreforge/dnserver/internal/model"
-	"github.com/atomreforge/dnserver/internal/utils"
+	"github.com/atomreforge/daizy-night-server/internal/config"
+	"github.com/atomreforge/daizy-night-server/internal/model"
+	"github.com/atomreforge/daizy-night-server/internal/utils"
 
 	"time"
 

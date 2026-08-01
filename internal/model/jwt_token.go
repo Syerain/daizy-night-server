@@ -3,7 +3,7 @@ package model
 import (
 	"time"
 
-	"github.com/atomreforge/dnserver/internal/constants"
+	"github.com/atomreforge/daizy-night-server/internal/constants"
 
 	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"

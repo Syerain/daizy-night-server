@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/atomreforge/dnserver/internal/model"
-	"github.com/atomreforge/dnserver/internal/utils"
+	"github.com/atomreforge/daizy-night-server/internal/model"
+	"github.com/atomreforge/daizy-night-server/internal/utils"
 
 	"gorm.io/gorm"
 )

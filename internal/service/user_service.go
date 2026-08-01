@@ -4,11 +4,11 @@ import (
 	"errors"
 	"log/slog"
 
-	abstract "github.com/atomreforge/dnserver/internal/abstract/interface"
-	"github.com/atomreforge/dnserver/internal/constants"
-	"github.com/atomreforge/dnserver/internal/crypto"
-	"github.com/atomreforge/dnserver/internal/model"
-	"github.com/atomreforge/dnserver/internal/utils"
+	abstract "github.com/atomreforge/daizy-night-server/internal/abstract/interface"
+	"github.com/atomreforge/daizy-night-server/internal/constants"
+	"github.com/atomreforge/daizy-night-server/internal/crypto"
+	"github.com/atomreforge/daizy-night-server/internal/model"
+	"github.com/atomreforge/daizy-night-server/internal/utils"
 
 	"gorm.io/gorm"
 )
