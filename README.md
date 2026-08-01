@@ -17,9 +17,17 @@ https://github.com/Syerain/daizy-night-app
 cli test client
 https://github.com/Syerain/daizy-night-appcli
 
-## Usage
+## Deployment
 
-you must edit `./Config.yaml` beforge the first launch
+### Configuration
+
+during alpha period there are some files for test placed under the root dir
+
+before first launch, you must :
+
+- edit file `./Config.yaml`
+
+- delete dir `./test`
 
 ## Tech stack & packages
 

@@ -1,19 +1,32 @@
 package service
 
 import (
+	abstract "daizynight/internal/abstract/interface"
+	"daizynight/internal/constants"
 	"daizynight/internal/crypto"
-	"daizynight/internal/db"
 	"daizynight/internal/model"
 	"daizynight/internal/utils"
 	"errors"
-
-	"daizynight/internal/constants"
 	"log/slog"
 
 	"gorm.io/gorm"
 )
 
-func Register(b *model.RegisterBody) error {
+type ServiceUser struct {
+	Userrepo  abstract.InterfaceUserRepo
+	Tokenrepo abstract.InterfaceTokenRepo
+	Crypto    abstract.InterfaceCrypto
+}
+
+func NewServiceUser(repo abstract.InterfaceUserRepo, tokenrepo abstract.InterfaceTokenRepo, crypto abstract.InterfaceCrypto) *ServiceUser {
+	return &ServiceUser{
+		Userrepo:  repo,
+		Tokenrepo: tokenrepo,
+		Crypto:    crypto,
+	}
+}
+
+func (s *ServiceUser) Register(b *model.RegisterBody) error {
 	slog.Info("service processing register ...")
 
 	// salt psw
@@ -26,7 +39,19 @@ func Register(b *model.RegisterBody) error {
 	//
 	switch b.Registerway {
 	case constants.RegisterLegacy:
-		err = db.CreateUser(&model.User{
+		payload, err := s.Crypto.AnalyzeRegistercode(b.Registercode)
+		if err != nil {
+			var regErr *crypto.ErrRegister
+			if errors.As(err, &regErr) {
+				return &ErrRegister{Message: "invalid registercode format"}
+			}
+			return err // unreachable
+		}
+		if !s.Crypto.VerifyRegistercodePayload(*payload) {
+			return &ErrRegister{Message: "unusable registercode"}
+		}
+
+		err = s.Userrepo.CreateUser(&model.User{
 			Username:     b.Username,
 			Nickname:     b.Nickname,
 			PasswordHash: passwordHash,
@@ -48,17 +73,17 @@ func Register(b *model.RegisterBody) error {
 	return nil
 }
 
-func Login(b model.LoginBody) (success bool, accessToken string, refreshToken string, err error) {
+func (s *ServiceUser) Login(b model.LoginBody) (success bool, accessToken string, refreshToken string, err error) {
 	switch b.Loginway {
 	case constants.LoginLegacy:
 		{
 			if b.Username != "" {
-				user, err := db.GetUserByUsername(b.Username)
+				user, err := s.Userrepo.GetUserByUsername(b.Username)
 				// db error during GetUser
 				if err != nil {
 					return false, "", "", err
 				}
-				matched, err := crypto.ValidateSaltedPassword(b.Password, user.PasswordHash)
+				matched, err := utils.HashVerify(b.Password, user.PasswordHash)
 				if err != nil {
 					return false, "", "", err
 				}
@@ -66,29 +91,29 @@ func Login(b model.LoginBody) (success bool, accessToken string, refreshToken st
 					return false, "", "", nil
 				}
 
-				payloadAccessToken := crypto.JwtAccessTokenPayload{
+				payloadAccessToken := model.JwtAccessTokenPayload{
 					AtomID:   user.AtomID,
 					Username: user.Username,
 					Role:     user.Role,
 				}
-				payloadRefreshToken := crypto.JwtRefreshTokenPayload{
+				payloadRefreshToken := model.JwtRefreshTokenPayload{
 					AtomID:   user.AtomID,
 					Username: user.Username,
 				}
 
-				accessToken, err := crypto.SignAccessToken(payloadAccessToken)
+				accessToken, err := s.Crypto.SignAccessToken(payloadAccessToken)
 				if err != nil {
 					slog.Error(err.Error())
 					return false, "", "", err
 				}
 
-				refreshToken, err := crypto.SignRefreshToken(payloadRefreshToken)
+				refreshToken, err := s.Crypto.SignRefreshToken(payloadRefreshToken)
 				if err != nil {
 					slog.Error(err.Error())
 					return false, "", "", err
 				}
 
-				if err := db.SaveRefreshToken(user.AtomID, refreshToken); err != nil {
+				if err := s.Tokenrepo.SaveRefreshToken(user.AtomID, refreshToken); err != nil {
 					slog.Error(err.Error())
 					return false, "", "", err
 				}
@@ -108,37 +133,43 @@ func Login(b model.LoginBody) (success bool, accessToken string, refreshToken st
 	return false, "", "", nil
 }
 
-func RefreshAccessToken(rawToken string) (success bool, accessToken string, refreshToken string, err error) {
-	payload, err := crypto.VerifyRefreshToken(rawToken)
+func (s *ServiceUser) RefreshAccessToken(rawToken string) (success bool, accessToken string, refreshToken string, err error) {
+	payload, err := s.Crypto.VerifyRefreshToken(rawToken)
 	if err != nil {
 		return false, "", "", err
 	}
 
-	valid, err := db.GetRefreshToken(payload.AtomID, rawToken)
+	valid, err := s.Tokenrepo.GetRefreshToken(payload.AtomID, rawToken)
 	if err != nil || !valid {
 		return false, "", "", err
 	}
 
-	db.RevokeUserTokens(payload.AtomID)
-
-	payloadAccess := crypto.JwtAccessTokenPayload{
-		AtomID:   payload.AtomID,
-		Username: payload.Username,
-	}
-	accessToken, err = crypto.SignAccessToken(payloadAccess)
+	err = s.Tokenrepo.RevokeUserTokens(payload.AtomID)
 	if err != nil {
 		return false, "", "", err
 	}
 
-	payloadRefresh := crypto.JwtRefreshTokenPayload{
+	payloadAccess := model.JwtAccessTokenPayload{
 		AtomID:   payload.AtomID,
 		Username: payload.Username,
 	}
-	refreshToken, err = crypto.SignRefreshToken(payloadRefresh)
+	accessToken, err = s.Crypto.SignAccessToken(payloadAccess)
 	if err != nil {
 		return false, "", "", err
 	}
 
-	db.SaveRefreshToken(payload.AtomID, refreshToken)
+	payloadRefresh := model.JwtRefreshTokenPayload{
+		AtomID:   payload.AtomID,
+		Username: payload.Username,
+	}
+	refreshToken, err = s.Crypto.SignRefreshToken(payloadRefresh)
+	if err != nil {
+		return false, "", "", err
+	}
+
+	err = s.Tokenrepo.SaveRefreshToken(payload.AtomID, refreshToken)
+	if err != nil {
+		return false, "", "", err
+	}
 	return true, accessToken, refreshToken, nil
 }

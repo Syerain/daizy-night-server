@@ -1,17 +1,15 @@
 package config
 
-import (
-	"github.com/oy3o/conf"
-)
+import "daizynight/internal/utils/confx"
 
 // MustLoadConfig panics when encountering errors.
 func MustLoadConfig() *Config {
-	cfg := conf.MustLoad[Config]("daizy",
-		conf.WithLocale("zh"),
+	cfg := confx.MustLoad[Config]("daizynight",
+		//conf.WithLocale("zh"),
 
 		// Explicitly specified
-		conf.WithFileName("config"),
-		conf.WithFileType("yaml"),
+		confx.WithFileName("config"),
+		confx.WithFileType("yaml"),
 	)
 
 	return cfg

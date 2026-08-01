@@ -6,10 +6,10 @@ import (
 	"github.com/labstack/echo/v5"
 )
 
-func New() *echo.Echo {
+func New(h *handler.HandlerComplex) *echo.Echo {
 	e := echo.New()
 
-	e.POST("/api/register", handler.HandleRegister)
+	e.POST("/api/register", h.HandleRegister)
 
 	return e
 }

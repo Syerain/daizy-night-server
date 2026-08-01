@@ -1,7 +1,6 @@
-package db
+package dbware
 
 import (
-	"daizynight/internal/config"
 	"daizynight/internal/model"
 	"log/slog"
 
@@ -10,11 +9,16 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-var DB *gorm.DB
+type ProviderDB struct {
+	db *gorm.DB
+}
 
-func Init(cfg *config.Config) error {
+func NewDBProvider(ctx struct {
+	IsDebugMode bool
+	DSN         string
+}) (*ProviderDB, error) {
 	logLevel := logger.Warn
-	if cfg.Database.IsDebugMode {
+	if ctx.IsDebugMode {
 		logLevel = logger.Info
 	}
 
@@ -23,32 +27,31 @@ func Init(cfg *config.Config) error {
 	})
 
 	// create or connect db
-	db, err := gorm.Open(sqlite.Open(cfg.Database.DSN), &gorm.Config{
+	db, err := gorm.Open(sqlite.Open(ctx.DSN), &gorm.Config{
 		Logger: gormLogger,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if err := db.AutoMigrate(&model.User{}, &model.RefreshToken{}); err != nil {
-		return err
+		return nil, err
 	}
 
-	DB = db
-	return nil
+	return &ProviderDB{db: db}, nil
 }
 
 // check db health
-func CheckDB() error {
-	sql, err := DB.DB()
+func (p *ProviderDB) Check() error {
+	sql, err := p.db.DB()
 	if err != nil {
 		return err
 	}
 	return sql.Ping()
 }
 
-func CloseDB() error {
-	sql, err := DB.DB()
+func (p *ProviderDB) Close() error {
+	sql, err := p.db.DB()
 	if err != nil {
 		return err
 	}

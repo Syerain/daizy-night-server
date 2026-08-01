@@ -1,4 +1,4 @@
-package db
+package dbware
 
 import (
 	"daizynight/internal/model"
@@ -13,9 +13,9 @@ import (
 // dbware.go provides them.
 // we dont wrap all the functions bcz that is an abstract layer over another.
 
-func CreateUser(b *model.User) error {
+func (p *ProviderDB) CreateUser(b *model.User) error {
 	b.RegisterTime = time.Now()
-	result := DB.Create(b)
+	result := p.db.Create(b)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
 			return result.Error
@@ -25,9 +25,9 @@ func CreateUser(b *model.User) error {
 	return nil
 }
 
-func GetUserByUsername(name string) (*model.User, error) {
+func (p *ProviderDB) GetUserByUsername(name string) (*model.User, error) {
 	var user model.User
-	result := DB.Where(&model.User{Username: name}).First(&user)
+	result := p.db.Where(&model.User{Username: name}).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -37,9 +37,9 @@ func GetUserByUsername(name string) (*model.User, error) {
 	return &user, nil
 }
 
-func GetUserByAtomid(id int) (*model.User, error) {
+func (p *ProviderDB) GetUserByAtomid(atomid uint) (*model.User, error) {
 	var user model.User
-	result := DB.Where(&model.User{AtomID: id}).First(&user)
+	result := p.db.Where(&model.User{AtomID: atomid}).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -49,20 +49,20 @@ func GetUserByAtomid(id int) (*model.User, error) {
 	return &user, nil
 }
 
-func SaveRefreshToken(atomid int, rawToken string) error {
+func (p *ProviderDB) SaveRefreshToken(atomid uint, rawToken string) error {
 	hash, err := utils.HashCreate(rawToken)
 	if err != nil {
 		return err
 	}
-	return DB.Create(&model.RefreshToken{
+	return p.db.Create(&model.RefreshToken{
 		AtomID:    atomid,
 		TokenHash: hash,
 	}).Error
 }
 
-func GetRefreshToken(atomid int, rawToken string) (bool, error) {
+func (p *ProviderDB) GetRefreshToken(atomid uint, rawToken string) (bool, error) {
 	var tokens []model.RefreshToken
-	result := DB.Where("atomid = ? AND revoked_at IS NULL", atomid).Find(&tokens)
+	result := p.db.Where("atomid = ? AND revoked_at IS NULL", atomid).Find(&tokens)
 	if result.Error != nil {
 		return false, result.Error
 	}
@@ -78,9 +78,9 @@ func GetRefreshToken(atomid int, rawToken string) (bool, error) {
 	return false, nil
 }
 
-func RevokeUserTokens(atomid int) error {
+func (p *ProviderDB) RevokeUserTokens(atomid uint) error {
 	now := time.Now()
-	return DB.Model(&model.RefreshToken{}).
+	return p.db.Model(&model.RefreshToken{}).
 		Where("atomid = ? AND revoked_at IS NULL", atomid).
 		Update("revoked_at", now).Error
 }

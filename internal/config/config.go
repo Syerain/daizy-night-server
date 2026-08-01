@@ -14,10 +14,6 @@ type Config struct {
 	Http struct {
 		Port    uint   `mapstructure:"port" validate:"port" default:"4703"`
 		Address string `mapstructure:"address" validate:"ip_addr" default:"127.0.0.1"`
-
-		// use format like 1m30s and viper can read it
-		JwtAccessTokenExpireTime  time.Duration `mapstructure:"jwtAccessTokenExpireTime" validate:"required"`
-		JwtRefreshTokenExpireTime time.Duration `mapstructure:"jwtRefreshTokenExpireTime" validate:"required"`
 	} `mapstructure:"http"`
 
 	Database struct {
@@ -40,5 +36,9 @@ type Config struct {
 		JwtAccessTokenDeckey  string `mapstructure:"jwtAccessTokenDeckey" validate:"required"`
 		JwtRefreshTokenEnckey string `mapstructure:"jwtRefreshTokenEnckey" validate:"required"`
 		JwtRefreshTokenDeckey string `mapstructure:"jwtRefreshTokenDeckey" validate:"required"`
+
+		// use format like 1m30s and viper can read it
+		JwtAccessTokenExpireTime  time.Duration `mapstructure:"jwtAccessTokenExpireTime" validate:"required"`
+		JwtRefreshTokenExpireTime time.Duration `mapstructure:"jwtRefreshTokenExpireTime" validate:"required"`
 	} `mapstructure:"security"`
 }

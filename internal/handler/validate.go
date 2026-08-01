@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"daizynight/internal/crypto"
 	"daizynight/internal/model"
 	"unicode/utf8"
 )
@@ -43,8 +42,8 @@ func ValidateRegisterParams(b *model.RegisterBody) error {
 	}
 
 	// registercode
-	if !crypto.ValidateRegistercode(b.Registercode) {
-		return &ErrRegisterValidation{Field: "registercode", Message: "invalid format or outdated registercode", Type: InvalidRegistercode}
+	if b.Registercode == "" {
+		return &ErrRegisterValidation{Field: "registercode", Type: NotNull, Message: NotNull.Say()}
 	}
 
 	return nil

@@ -1,56 +1,79 @@
 package crypto
 
 import (
+	"crypto/ed25519"
 	"daizynight/internal/config"
-	"daizynight/internal/constants"
+	"daizynight/internal/model"
+	"daizynight/internal/utils"
+	"errors"
 
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var accessTokenExpireTime time.Duration
-var refreshTokenExpireTime time.Duration
-
-func InitJwt(cfg *config.Config) {
-	accessTokenExpireTime = cfg.Http.JwtAccessTokenExpireTime
-	refreshTokenExpireTime = cfg.Http.JwtRefreshTokenExpireTime
+type ProviderCrypto struct {
+	JwtAccessTokenEnckey   ed25519.PrivateKey
+	JwtAccessTokenDeckey   ed25519.PublicKey
+	JwtRefreshTokenEnckey  ed25519.PrivateKey
+	JwtRefreshTokenDeckey  ed25519.PublicKey
+	RegistercodeEnckey     ed25519.PrivateKey
+	RegistercodeDeckey     ed25519.PublicKey
+	AccessTokenExpireTime  time.Duration
+	RefreshTokenExpireTime time.Duration
 }
 
-type JwtAccessTokenPayload struct {
-	jwt.RegisteredClaims
+func NewProviderCrypto(cfg *config.Config) (*ProviderCrypto, error) {
+	var errs []error
+	jate, err := utils.HexToPrivKey(cfg.Security.JwtAccessTokenEnckey)
+	errs = append(errs, err)
+	jatd, err := utils.HexToPubKey(cfg.Security.JwtAccessTokenDeckey)
+	errs = append(errs, err)
+	jrte, err := utils.HexToPrivKey(cfg.Security.JwtRefreshTokenEnckey)
+	errs = append(errs, err)
+	jrtd, err := utils.HexToPubKey(cfg.Security.JwtRefreshTokenDeckey)
+	errs = append(errs, err)
+	re, err := utils.HexToPrivKey(cfg.Security.RegistercodeEnckey)
+	errs = append(errs, err)
+	rd, err := utils.HexToPubKey(cfg.Security.RegistercodeDeckey)
+	errs = append(errs, err)
+	atet := cfg.Security.JwtAccessTokenExpireTime
+	rtet := cfg.Security.JwtRefreshTokenExpireTime
 
-	// business
-	AtomID   int            `json:"atomid"`
-	Username string         `json:"username"`
-	Role     constants.Role `json:"role"`
+	if err := errors.Join(errs...); err != nil {
+		return nil, err
+	}
+
+	return &ProviderCrypto{
+		JwtAccessTokenEnckey:   jate,
+		JwtAccessTokenDeckey:   jatd,
+		JwtRefreshTokenEnckey:  jrte,
+		JwtRefreshTokenDeckey:  jrtd,
+		RegistercodeEnckey:     re,
+		RegistercodeDeckey:     rd,
+		AccessTokenExpireTime:  atet,
+		RefreshTokenExpireTime: rtet,
+	}, nil
 }
 
-type JwtRefreshTokenPayload struct {
-	jwt.RegisteredClaims
-
-	AtomID   int    `json:"atomid"`
-	Username string `json:"username"`
-}
-
-func SignAccessToken(payload JwtAccessTokenPayload) (string, error) {
-	payload.ExpiresAt = jwt.NewNumericDate(time.Now().Add(accessTokenExpireTime))
+func (p *ProviderCrypto) SignAccessToken(payload model.JwtAccessTokenPayload) (string, error) {
+	payload.ExpiresAt = jwt.NewNumericDate(time.Now().Add(p.AccessTokenExpireTime))
 	payload.IssuedAt = jwt.NewNumericDate(time.Now())
 	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, payload)
-	return token.SignedString(jwtAccessTokenEnckey)
+	return token.SignedString(p.JwtAccessTokenEnckey)
 }
 
-func SignRefreshToken(payload JwtRefreshTokenPayload) (string, error) {
-	payload.ExpiresAt = jwt.NewNumericDate(time.Now().Add(refreshTokenExpireTime))
+func (p *ProviderCrypto) SignRefreshToken(payload model.JwtRefreshTokenPayload) (string, error) {
+	payload.ExpiresAt = jwt.NewNumericDate(time.Now().Add(p.RefreshTokenExpireTime))
 	payload.IssuedAt = jwt.NewNumericDate(time.Now())
 	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, payload)
-	return token.SignedString(jwtAccessTokenEnckey)
+	return token.SignedString(p.JwtRefreshTokenEnckey)
 }
 
-func VerifyAccessToken(tokenStr string) (*JwtAccessTokenPayload, error) {
-	var payload JwtAccessTokenPayload
+func (p *ProviderCrypto) VerifyAccessToken(tokenStr string) (*model.JwtAccessTokenPayload, error) {
+	var payload model.JwtAccessTokenPayload
 	token, err := jwt.ParseWithClaims(tokenStr, &payload, func(t *jwt.Token) (interface{}, error) {
-		return jwtAccessTokenDeckey, nil
+		return p.JwtAccessTokenDeckey, nil
 	})
 	if err != nil || !token.Valid {
 		return nil, err
@@ -58,10 +81,10 @@ func VerifyAccessToken(tokenStr string) (*JwtAccessTokenPayload, error) {
 	return &payload, nil
 }
 
-func VerifyRefreshToken(tokenStr string) (*JwtRefreshTokenPayload, error) {
-	var payload JwtRefreshTokenPayload
+func (p *ProviderCrypto) VerifyRefreshToken(tokenStr string) (*model.JwtRefreshTokenPayload, error) {
+	var payload model.JwtRefreshTokenPayload
 	token, err := jwt.ParseWithClaims(tokenStr, &payload, func(t *jwt.Token) (interface{}, error) {
-		return jwtRefreshTokenDeckey, nil
+		return p.JwtRefreshTokenDeckey, nil
 	})
 	if err != nil || !token.Valid {
 		return nil, err

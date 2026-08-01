@@ -1,12 +1,10 @@
 main:
-  isDebugMode: true
+  isDebugMode: false
 
 http:
-  listenPort: 4703
-  listenAddress: "127.0.0.1"
-  jwtAccessTokenExpireTime: 15m
-  jwtRefreshTokenExpireTime: 7d
-
+  port: 4703
+  address: "127.0.0.1"
+  
 database:
   isDebugMode: false
   DSN: "./test/data.db"
@@ -24,3 +22,6 @@ security:
   jwtAccessTokenDeckey: "c6c6eb3f2ecb87e6fd63b6bced914314c4a00eb729f74289b22cd47bb047ab3b"
   jwtRefreshTokenEnckey: "501390e964e0e975254ef9eac5488d6869938c02be43fa978c9dcd142a4c0edb"
   jwtRefreshTokenDeckey: "19cd8a508269ce3951e1bb0e468a8455af08fda48696176a164ea747255150b0"
+  # the only supported time units are: h, m, s, ms, us, ns
+  jwtAccessTokenExpireTime: 15m
+  jwtRefreshTokenExpireTime: 168h
