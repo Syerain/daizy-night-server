@@ -1,4 +1,4 @@
-package constants
+package consts
 
 type Registerway string
 type Loginway string

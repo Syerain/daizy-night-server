@@ -1,11 +1,12 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
 
+	abstract "github.com/atomreforge/daizy-night-server/internal/abstract/interface"
+	"github.com/atomreforge/daizy-night-server/internal/consts"
+	"github.com/atomreforge/daizy-night-server/internal/errs"
 	"github.com/atomreforge/daizy-night-server/internal/model"
-	"github.com/atomreforge/daizy-night-server/internal/service"
 
 	"github.com/labstack/echo/v5"
 )
@@ -17,30 +18,26 @@ func (h *HandlerComplex) HandleRegister(ctx *echo.Context) error {
 
 	// failed to build RegisterBody
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"message": "unknown register body eror"})
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{"message": string(consts.ExprHttpInternalServerError)})
 	}
 
 	// failure during param validation
-	err = ValidateRegisterParams(b)
-	if err != nil {
-		var errval *ErrRegisterValidation
-		if errors.As(err, &errval) {
-			return ctx.JSON(http.StatusBadRequest, map[string]string{"message": errval.Message})
+	if err := ValidateRegisterParams(b); err != nil {
+		if errapp, ok := errs.Easx[abstract.InterfaceAppError](err); ok {
+			return ctx.JSON(errapp.HttpAbort(), map[string]string{"message": errapp.Error()})
 		}
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"message": err.Error()})
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{"message": string(consts.ExprHttpInternalServerError)})
 	}
 
 	// execute reg service
 	if err := h.ServiceUser.Register(b); err != nil {
-		var errReg *service.ErrRegister
-		//
-		if errors.As(err, &errReg) {
-			return ctx.JSON(http.StatusBadRequest, map[string]string{"message": errReg.Message})
+		if errapp, ok := errs.Easx[abstract.InterfaceAppError](err); ok {
+			return ctx.JSON(errapp.HttpAbort(), map[string]string{"message": errapp.Error()})
 		}
-		// undefined err
-		return ctx.JSON(http.StatusInternalServerError, map[string]string{"message": "internal error"})
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{"message": string(consts.ExprHttpInternalServerError)})
 	}
 
+	// process success
 	return ctx.JSON(http.StatusOK, map[string]string{"message": "ok"})
 
 }

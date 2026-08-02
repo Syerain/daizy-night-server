@@ -1,9 +1,20 @@
-package crypto
+package errs
 
 type errType int
 
+// we use negative expressions to describe errors.
 const (
 	Unknown errType = iota
+
+	ValidationKeyNull
+	ValidationKeyOverLength
+	ValidationKeyInvalidLength
+	ValidationKeyInvalidChar
+	ValidationKeyDuplicatedValue
+
+	// differs from RepeatedUserName
+	UserExists
+
 	RegistercodeFormat
 	RegistercodeFormatInvalidLength
 	RegistercodeFormatInvalidChar
@@ -14,23 +25,39 @@ const (
 	RegistercodeUnusable
 	RegistercodeUnusableOutdated
 	RegistercodeUnusableUsed
-	RegistercodeUnusableRepeatedUsername
+	RegistercodeUnusableRepeatedUsername //http409
+
+	RegistercodeUnmarshalFailed
+
+	FeatureUnsupported
 )
 
-func (t errType) Say() string {
-	switch t {
+func (t *errType) Say() string {
+	switch *t {
 	case Unknown:
 		return "unknown error"
+
+	case ValidationKeyNull:
+		return "must not be null"
+	case ValidationKeyOverLength:
+		return "length should be shorter than 15 chars"
+	case ValidationKeyInvalidLength:
+		return "invalid length"
+	case ValidationKeyInvalidChar:
+		return "must contains digits and english letters only"
+
 	case RegistercodeFormat:
 		return "invalid registercode format"
 	case RegistercodeFormatInvalidLength:
 		return "registercode length should be shorter than 15 chars"
 	case RegistercodeFormatInvalidChar:
 		return "registercode must contains digits and english letters only"
+
 	case RegistercodeAuthen:
 		return "registercode authentication failed"
 	case RegistercodeAuthenFailed:
 		return "registercode signature verification failed"
+
 	case RegistercodeUnusable:
 		return "unusable registercode"
 	case RegistercodeUnusableOutdated:
@@ -39,17 +66,10 @@ func (t errType) Say() string {
 		return "used registercode"
 	case RegistercodeUnusableRepeatedUsername:
 		return "repeated username in registercode"
+	case RegistercodeUnmarshalFailed:
+		return "failed to unmarshal regcode to golang struct"
+	case FeatureUnsupported:
+		return "unsupported feature"
 	}
 	return "undefined error type"
-}
-
-type ErrRegister struct {
-	StatusCode int
-	Message    string
-	Field      string
-	Type       errType
-}
-
-func (e *ErrRegister) Error() string {
-	return "Register error:" + e.Field + " - " + e.Message
 }

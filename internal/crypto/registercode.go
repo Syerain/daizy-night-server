@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/atomreforge/daizy-night-server/internal/errs"
 	"github.com/atomreforge/daizy-night-server/internal/model"
 )
 
@@ -21,7 +22,7 @@ func (p *ProviderCrypto) SignRegistercode(payload model.RegistercodePayload) (
 	sig := ed25519.Sign(p.RegistercodeEnckey, payloadBytes)
 	sigHex := hex.EncodeToString(sig)
 
-	slog.Info("Signed Registercode for atomid", "atomid", payload.AtomID, "magicword", payload.Magicword, "before", payload.Before)
+	slog.Info("Signed Registercode", "magicword", payload.Magicword, "before", payload.Before)
 	return payloadHex + "." + sigHex, nil
 }
 
@@ -33,11 +34,8 @@ func (p *ProviderCrypto) AnalyzeRegistercode(codeStr string) (*model.Registercod
 	parts := strings.SplitN(codeStr, ".", 2)
 	if len(parts) != 2 {
 		slog.Error("Invalid registercode format")
-		return nil, &ErrRegister{
-			StatusCode: 400,
-			Message:    "invalid registercode format",
-			Field:      "registercode",
-			Type:       RegistercodeFormat,
+		return nil, &errs.ErrRegistercode{
+			Type: errs.RegistercodeFormat,
 		}
 	}
 
@@ -49,11 +47,8 @@ func (p *ProviderCrypto) AnalyzeRegistercode(codeStr string) (*model.Registercod
 	// verify sig
 	if !ed25519.Verify(p.RegistercodeDeckey, []byte(payloadStr), sig) {
 		slog.Error("Registercode signature verification failed")
-		return nil, &ErrRegister{
-			StatusCode: 400,
-			Message:    "registercode signature verification failed",
-			Field:      "registercode",
-			Type:       RegistercodeAuthenFailed,
+		return nil, &errs.ErrRegistercode{
+			Type: errs.RegistercodeAuthenFailed,
 		}
 	}
 
@@ -62,11 +57,8 @@ func (p *ProviderCrypto) AnalyzeRegistercode(codeStr string) (*model.Registercod
 	err := json.Unmarshal([]byte(payloadStr), &payload)
 	if err != nil {
 		slog.Error("Failed to unmarshal registercode", "error", err)
-		return nil, &ErrRegister{
-			StatusCode: 400,
-			Message:    "failed to unmarshal registercode",
-			Field:      "registercode",
-			Type:       RegistercodeFormat,
+		return nil, &errs.ErrRegistercode{
+			Type: errs.RegistercodeUnmarshalFailed,
 		}
 	}
 	return &payload, nil
@@ -74,7 +66,5 @@ func (p *ProviderCrypto) AnalyzeRegistercode(codeStr string) (*model.Registercod
 
 // 1.sig; 2.expire
 func (p *ProviderCrypto) VerifyRegistercodePayload(payload model.RegistercodePayload) bool {
-
 	return payload.Before.Before(time.Now())
-
 }

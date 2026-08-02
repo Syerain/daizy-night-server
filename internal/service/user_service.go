@@ -5,8 +5,10 @@ import (
 	"log/slog"
 
 	abstract "github.com/atomreforge/daizy-night-server/internal/abstract/interface"
-	"github.com/atomreforge/daizy-night-server/internal/constants"
-	"github.com/atomreforge/daizy-night-server/internal/crypto"
+	"github.com/atomreforge/daizy-night-server/internal/consts"
+
+	//"github.com/atomreforge/daizy-night-server/internal/crypto"
+	"github.com/atomreforge/daizy-night-server/internal/errs"
 	"github.com/atomreforge/daizy-night-server/internal/model"
 	"github.com/atomreforge/daizy-night-server/internal/utils"
 
@@ -39,17 +41,17 @@ func (s *ServiceUser) Register(b *model.RegisterBody) error {
 
 	//
 	switch b.Registerway {
-	case constants.RegisterLegacy:
+	case consts.RegisterLegacy:
 		payload, err := s.Crypto.AnalyzeRegistercode(b.Registercode)
 		if err != nil {
-			var regErr *crypto.ErrRegister
-			if errors.As(err, &regErr) {
-				return &ErrRegister{Message: "invalid registercode format"}
-			}
-			return err // unreachable
-		}
+			return err
+		} //it can only be ErrRegistercode
+
 		if !s.Crypto.VerifyRegistercodePayload(*payload) {
-			return &ErrRegister{Message: "unusable registercode"}
+			return &errs.ErrRegistercode{
+				Type: errs.RegistercodeUnusableOutdated,
+				Http: 400,
+			}
 		}
 
 		err = s.Userrepo.CreateUser(&model.User{
@@ -58,17 +60,25 @@ func (s *ServiceUser) Register(b *model.RegisterBody) error {
 			PasswordHash: passwordHash,
 			Registercode: b.Registercode,
 		})
+
 		if err != nil {
-			slog.Error(err.Error())
+			slog.Error("failure during creating user;" + err.Error())
 			if errors.Is(err, gorm.ErrDuplicatedKey) {
-				return &ErrRegister{Message: "duplicated register params already exists in the database "}
+				return &errs.ErrValidation{
+					Type:  errs.ValidationKeyDuplicatedValue,
+					Http:  400,
+					Field: string(consts.ExprIndetermined),
+					Value: string(consts.ExprIndetermined),
+				}
 			}
 			return err
 		}
-	case constants.RegisterGithub:
+
+	case consts.RegisterGithub:
+		slog.Warn(string(consts.ExprUnsupportedFeature))
 		return nil
 	default:
-		panic("unreachable")
+		panic(string(consts.ExprUnreachableCase))
 	}
 
 	return nil
@@ -76,7 +86,7 @@ func (s *ServiceUser) Register(b *model.RegisterBody) error {
 
 func (s *ServiceUser) Login(b model.LoginBody) (success bool, accessToken string, refreshToken string, err error) {
 	switch b.Loginway {
-	case constants.LoginLegacy:
+	case consts.LoginLegacy:
 		{
 			if b.Username != "" {
 				user, err := s.Userrepo.GetUserByUsername(b.Username)
@@ -124,7 +134,7 @@ func (s *ServiceUser) Login(b model.LoginBody) (success bool, accessToken string
 			}
 		}
 	// under constructing ..
-	case constants.LoginGithub:
+	case consts.LoginGithub:
 		{
 			return false, "", "", nil
 		}

@@ -3,7 +3,7 @@ package model
 import (
 	"time"
 
-	"github.com/atomreforge/daizy-night-server/internal/constants"
+	"github.com/atomreforge/daizy-night-server/internal/consts"
 
 	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
@@ -20,9 +20,9 @@ type JwtAccessTokenPayload struct {
 	jwt.RegisteredClaims
 
 	// business
-	AtomID   uint           `json:"atomid"`
-	Username string         `json:"username"`
-	Role     constants.Role `json:"role"`
+	AtomID   uint        `json:"atomid"`
+	Username string      `json:"username"`
+	Role     consts.Role `json:"role"`
 }
 
 type JwtRefreshTokenPayload struct {

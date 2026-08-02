@@ -1,21 +1,21 @@
 package model
 
 import (
-	"github.com/atomreforge/daizy-night-server/internal/constants"
+	"github.com/atomreforge/daizy-night-server/internal/consts"
 )
 
 type RegisterBody struct {
+	Registerway  consts.Registerway
 	Username     string
 	Nickname     string
 	Password     string
 	Registercode string
-	Registerway  constants.Registerway
 }
 
 type LoginBody struct {
-	Loginway  constants.Loginway
+	Loginway  consts.Loginway
+	Atomid    uint
 	Username  string
-	Atomid    int
 	Password  string
 	Entrycode string
 }

@@ -3,14 +3,14 @@ package model
 import (
 	"time"
 
-	"github.com/atomreforge/daizy-night-server/internal/constants"
+	"github.com/atomreforge/daizy-night-server/internal/consts"
 
 	"gorm.io/gorm"
 )
 
 type User struct {
 	gorm.Model
-	AtomID    uint   `gorm:"unique;not null"`
+	AtomID    uint   `gorm:"unique;not null;autoIncrement"`
 	Username  string `gorm:"unique;not null"`
 	Nickname  string `gorm:"not null"`
 	Email     string `gorm:"not null"`
@@ -21,7 +21,7 @@ type User struct {
 	Registercode string
 	PasswordHash string `gorm:"not null" json:"-"`
 
-	Role constants.Role `gorm:"not null;default:'user'"`
+	Role consts.Role `gorm:"not null;default:'user'"`
 
 	// Github OAuth:
 	GitHubID    int64  `gorm:"unique"`
