@@ -8,13 +8,13 @@ It's also my first golang project and I wished to learn something during the wor
 
 ## Repo
 
-server & devCliTool
+server
 https://github.com/atomreforge/daizy-night-server
 
 scheduled client
 https://github.com/atomreforge/daizy-night-app
 
-cli test client
+CLI client for test
 https://github.com/Syerain/dnappcli
 
 ## Dev deployment
