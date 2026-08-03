@@ -28,4 +28,4 @@ temp/
 
 # Go specific
 /vendor/
-/go.sum
+main

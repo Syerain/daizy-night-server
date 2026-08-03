@@ -10,6 +10,7 @@ func New(h *handler.HandlerComplex) *echo.Echo {
 	e := echo.New()
 
 	e.POST("/api/register", h.HandleRegister)
+	e.POST("/api/login", h.HandleLogin)
 
 	return e
 }

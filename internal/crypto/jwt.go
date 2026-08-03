@@ -4,6 +4,7 @@ import (
 	"crypto/ed25519"
 	"errors"
 
+	abstract "github.com/atomreforge/daizy-night-server/internal/abstract/interface"
 	"github.com/atomreforge/daizy-night-server/internal/config"
 	"github.com/atomreforge/daizy-night-server/internal/model"
 	"github.com/atomreforge/daizy-night-server/internal/utils"
@@ -12,6 +13,8 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 )
+
+var _ abstract.InterfaceCrypto = (*ProviderCrypto)(nil)
 
 type ProviderCrypto struct {
 	JwtAccessTokenEnckey   ed25519.PrivateKey

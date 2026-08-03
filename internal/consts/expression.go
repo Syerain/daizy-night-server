@@ -21,4 +21,5 @@ const (
 	ExprLogin    expression = "Process-Login"
 
 	ExprHttpInternalServerError expression = "internal server error"
+	ExprHttpOk                  expression = "ok"
 )

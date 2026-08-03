@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"log/slog"
+	"net/http"
 
 	abstract "github.com/atomreforge/daizy-night-server/internal/abstract/interface"
 	"github.com/atomreforge/daizy-night-server/internal/consts"
@@ -94,12 +95,16 @@ func (s *ServiceUser) Login(b model.LoginBody) (success bool, accessToken string
 				if err != nil {
 					return false, "", "", err
 				}
+
 				matched, err := utils.HashVerify(b.Password, user.PasswordHash)
 				if err != nil {
 					return false, "", "", err
 				}
 				if !matched {
-					return false, "", "", nil
+					return false, "", "", &errs.ErrUserLogin{
+						Type: errs.UserLoginParamsPasswordIncorrect,
+						Http: http.StatusBadRequest,
+					}
 				}
 
 				payloadAccessToken := model.JwtAccessTokenPayload{
@@ -132,16 +137,28 @@ func (s *ServiceUser) Login(b model.LoginBody) (success bool, accessToken string
 				return true, accessToken, refreshToken, nil
 
 			}
+			return false, "", "", &errs.ErrValidation{
+				Type:  errs.ValidationKeyNull,
+				Http:  http.StatusBadRequest,
+				Field: string(consts.ExprUsername),
+				Value: string(consts.ExprNull),
+			}
 		}
 	// under constructing ..
 	case consts.LoginGithub:
 		{
-			return false, "", "", nil
+			return false, "", "", &errs.ErrSupport{
+				Type: errs.FeatureUnsupported,
+				Http: http.StatusBadRequest,
+			}
 		}
 	}
 
 	// wont arrive here. (hope so?)
-	return false, "", "", nil
+	return false, "", "", &errs.ErrSupport{
+		Type: errs.FeatureUnsupported,
+		Http: http.StatusBadRequest,
+	}
 }
 
 func (s *ServiceUser) RefreshAccessToken(rawToken string) (success bool, accessToken string, refreshToken string, err error) {

@@ -18,28 +18,28 @@ func (h *HandlerComplex) HandleRegister(ctx *echo.Context) error {
 
 	// failed to build RegisterBody
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, map[string]string{"message": string(consts.ExprHttpInternalServerError)})
+		return Respond(ctx, http.StatusInternalServerError, string(consts.ExprHttpInternalServerError))
 	}
 
 	// failure during param validation
 	if err := ValidateRegisterParams(b); err != nil {
 		if errapp, ok := errs.Easx[abstract.InterfaceAppError](err); ok {
-			return ctx.JSON(errapp.HttpAbort(), map[string]string{"message": errapp.Error()})
+			return RespondCustom(ctx, errapp)
 		}
-		return ctx.JSON(http.StatusInternalServerError, map[string]string{"message": string(consts.ExprHttpInternalServerError)})
+		return Respond(ctx, http.StatusInternalServerError, string(consts.ExprHttpInternalServerError))
 	}
 
 	// execute reg service
 	if err := h.ServiceUser.Register(b); err != nil {
 		if errapp, ok := errs.Easx[abstract.InterfaceAppError](err); ok {
-			return ctx.JSON(errapp.HttpAbort(), map[string]string{"message": errapp.Error()})
+			return RespondCustom(ctx, errapp)
 		}
-		return ctx.JSON(http.StatusInternalServerError, map[string]string{"message": string(consts.ExprHttpInternalServerError)})
+		return Respond(ctx, http.StatusInternalServerError, string(consts.ExprHttpInternalServerError))
 	}
 
 	// process success
-	return ctx.JSON(http.StatusOK, map[string]string{"message": "ok"})
-
+	//return ctx.JSON(http.StatusOK, map[string]string{"message": "ok"})
+	return Respond(ctx, http.StatusOK, string(consts.ExprHttpOk))
 }
 
 func Bind[T any](ctx *echo.Context) (*T, error) {

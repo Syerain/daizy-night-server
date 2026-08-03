@@ -29,7 +29,7 @@ func (e *ErrValidation) Error() string {
 		e.Field +
 		" - " +
 		e.Type.Say() +
-		"founded:" +
+		"found: " +
 		e.Value)
 }
 
@@ -59,7 +59,6 @@ func (e *ErrRegistercode) Error() string {
 	return ("registercode failure: " +
 		e.Type.Say())
 }
-
 func (e *ErrRegistercode) HttpAbort() int { return e.Http }
 
 type ErrSupport struct {
@@ -67,10 +66,7 @@ type ErrSupport struct {
 	Http int
 }
 
-func (e *ErrSupport) Error() string {
-	return e.Type.Say()
-}
-
+func (e *ErrSupport) Error() string  { return e.Type.Say() }
 func (e *ErrSupport) HttpAbort() int { return e.Http }
 
 type ErrUnknown struct {
@@ -78,8 +74,13 @@ type ErrUnknown struct {
 	Http int
 }
 
-func (e *ErrUnknown) Error() string {
-	return e.Type.Say()
+func (e *ErrUnknown) Error() string  { return e.Type.Say() }
+func (e *ErrUnknown) HttpAbort() int { return e.Http }
+
+type ErrDbRecord struct {
+	Type errType
+	Http int
 }
 
-func (e *ErrUnknown) HttpAbort() int { return e.Http }
+func (e *ErrDbRecord) Error() string  { return e.Type.Say() }
+func (e *ErrDbRecord) HttpAbort() int { return e.Http }

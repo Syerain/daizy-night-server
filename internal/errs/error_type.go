@@ -15,6 +15,8 @@ const (
 	// differs from RepeatedUserName
 	UserExists
 
+	UserLoginParamsPasswordIncorrect
+
 	RegistercodeFormat
 	RegistercodeFormatInvalidLength
 	RegistercodeFormatInvalidChar
@@ -30,6 +32,8 @@ const (
 	RegistercodeUnmarshalFailed
 
 	FeatureUnsupported
+
+	DbRecordUsernameNotFound
 )
 
 func (t *errType) Say() string {
@@ -70,6 +74,10 @@ func (t *errType) Say() string {
 		return "failed to unmarshal regcode to golang struct"
 	case FeatureUnsupported:
 		return "unsupported feature"
+	case DbRecordUsernameNotFound:
+		return "unknown user"
+	case UserLoginParamsPasswordIncorrect:
+		return "incorrect password"
 	}
 	return "undefined error type"
 }

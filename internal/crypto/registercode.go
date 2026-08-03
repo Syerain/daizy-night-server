@@ -66,5 +66,5 @@ func (p *ProviderCrypto) AnalyzeRegistercode(codeStr string) (*model.Registercod
 
 // 1.sig; 2.expire
 func (p *ProviderCrypto) VerifyRegistercodePayload(payload model.RegistercodePayload) bool {
-	return payload.Before.Before(time.Now())
+	return payload.Before.After(time.Now())
 }

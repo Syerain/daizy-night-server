@@ -2,12 +2,20 @@ package dbware
 
 import (
 	"errors"
+	"net/http"
 	"time"
 
+	abstract "github.com/atomreforge/daizy-night-server/internal/abstract/interface"
+	"github.com/atomreforge/daizy-night-server/internal/errs"
 	"github.com/atomreforge/daizy-night-server/internal/model"
 	"github.com/atomreforge/daizy-night-server/internal/utils"
 
 	"gorm.io/gorm"
+)
+
+var (
+	_ abstract.InterfaceUserRepo  = (*ProviderDB)(nil)
+	_ abstract.InterfaceTokenRepo = (*ProviderDB)(nil)
 )
 
 // gorm had packaged db features but more business functions is needed.
@@ -31,7 +39,10 @@ func (p *ProviderDB) GetUserByUsername(name string) (*model.User, error) {
 	result := p.db.Where(&model.User{Username: name}).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, nil
+			return nil, &errs.ErrDbRecord{
+				Type: errs.DbRecordUsernameNotFound,
+				Http: http.StatusBadRequest,
+			}
 		}
 		return nil, result.Error
 	}
