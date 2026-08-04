@@ -3,9 +3,12 @@ package crypto
 import (
 	"crypto/ed25519"
 	"errors"
+	"net/http"
 
 	abstract "github.com/atomreforge/daizy-night-server/internal/abstract/interface"
 	"github.com/atomreforge/daizy-night-server/internal/config"
+	"github.com/atomreforge/daizy-night-server/internal/consts"
+	"github.com/atomreforge/daizy-night-server/internal/errs"
 	"github.com/atomreforge/daizy-night-server/internal/model"
 	"github.com/atomreforge/daizy-night-server/internal/utils"
 
@@ -94,4 +97,26 @@ func (p *ProviderCrypto) VerifyRefreshToken(tokenStr string) (*model.JwtRefreshT
 		return nil, err
 	}
 	return &payload, nil
+}
+
+func (p *ProviderCrypto) GetJwtAccessTokenDeckey() any {
+	return p.JwtAccessTokenDeckey
+}
+
+func (p *ProviderCrypto) GetJwtRefreshTokenDeckey() any {
+	return p.JwtRefreshTokenDeckey
+}
+
+func NewJWTKeyFunc(deckey ed25519.PublicKey) jwt.Keyfunc {
+	return func(t *jwt.Token) (interface{}, error) {
+		if t.Method != jwt.SigningMethodEdDSA {
+			return nil, errs.BuildErrValidation(
+				errs.ValidationCryptoUnexpectedSigningMethod,
+				http.StatusBadRequest,
+				string(consts.ExprDeckey),
+				string(consts.ExprIndetermined),
+			)
+		}
+		return deckey, nil
+	}
 }

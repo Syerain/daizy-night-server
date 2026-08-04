@@ -25,11 +25,11 @@ type ErrValidation struct {
 }
 
 func (e *ErrValidation) Error() string {
-	return ("Validation error at:" +
+	return ("validation error at " +
 		e.Field +
-		" - " +
+		";" +
 		e.Type.Say() +
-		"found: " +
+		";found:" +
 		e.Value)
 }
 

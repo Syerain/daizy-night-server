@@ -18,6 +18,8 @@ const (
 	ValidationKeyInvalidChar
 	ValidationKeyDuplicatedValue
 
+	ValidationCryptoUnexpectedSigningMethod
+
 	// differs from RepeatedUserName
 	UserExists
 
@@ -87,6 +89,9 @@ func (t *errType) Say() string {
 		return "db record not found"
 	case DbRecordUsernameNotFound:
 		return "unknown user"
+	case ValidationCryptoUnexpectedSigningMethod:
+		return "expected signing method of public key"
+
 	}
 	return "undefined error type"
 }

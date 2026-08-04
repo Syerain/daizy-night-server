@@ -66,14 +66,14 @@ func main() {
 	defer db.Close()
 
 	// crypto provider
-	cryptoj, err := crypto.NewProviderCrypto(cfg)
+	pCrypto, err := crypto.NewProviderCrypto(cfg)
 	if err != nil {
 		slog.Error("FATAL: couldnt init crypto !")
 		os.Exit(1)
 	}
 
 	// service provider
-	svcUser := service.NewServiceUser(db, db, cryptoj)
+	svcUser := service.NewServiceUser(db, db, pCrypto)
 
 	// handler
 	handler := &handler.HandlerComplex{
@@ -81,7 +81,7 @@ func main() {
 	}
 
 	// Echo
-	e := router.New(handler)
+	e := router.New(handler, pCrypto)
 	e.Logger = utils.GetLogger()
 	e.HTTPErrorHandler = func(ctx *echo.Context, err error) {
 		if resp, uErr := echo.UnwrapResponse(ctx.Response()); uErr == nil {
@@ -98,24 +98,17 @@ func main() {
 				//slog.Error(err.Error())
 				errapp, ok := errs.Easx[abstract.InterfaceAppError](err)
 				if ok {
+					slog.Error(errapp.Error())
 					mid.RespondCustom(ctx, errapp)
 				} else {
+					slog.Error(err.Error())
 					mid.Respond(ctx, code, string(consts.ExprHttpInternalServerError))
 				}
 			} else {
+				slog.Error(err.Error())
 				mid.Respond(ctx, http.StatusInternalServerError, string(consts.ExprHttpInternalServerError))
 			}
 		}
-
-		/*var cErr error
-		if ctx.Request().Method == http.MethodHead {
-			cErr = ctx.NoContent(code)
-		} else {
-			cErr = ctx.File(fmt.Sprintf("%d.html", code)) // eg: 404.html
-		}
-		if cErr != nil {
-			ctx.Logger().Error("error page sending failed or not exists", "error", errors.Join(err, cErr))
-		}*/
 	}
 
 	e.Use(middleware.Recover())
@@ -126,10 +119,4 @@ func main() {
 		slog.Error("FATAL: Failed to start HTTP server.")
 		os.Exit(1)
 	}
-
-	/*
-		// app
-		app := New(cfg, db)
-		app.echo.Logger = utils.GetLogger()
-	*/
 }

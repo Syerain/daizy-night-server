@@ -15,6 +15,7 @@ import (
 /* shit hill 's first show XD */
 
 func (h *HandlerComplex) HandleRegister(ctx *echo.Context) error {
+	slog.Info("got register request")
 	b, err := Bind[model.RegisterBody](ctx)
 
 	// failed to build RegisterBody

@@ -1,15 +1,28 @@
 package middleware
 
 import (
-	"log/slog"
-	"net/http"
+	"crypto/ed25519"
 
 	abstract "github.com/atomreforge/daizy-night-server/internal/abstract/interface"
 	"github.com/atomreforge/daizy-night-server/internal/consts"
-	"github.com/atomreforge/daizy-night-server/internal/errs"
+	"github.com/atomreforge/daizy-night-server/internal/crypto"
+	"github.com/atomreforge/daizy-night-server/internal/model"
+	"github.com/golang-jwt/jwt/v5"
+	echojwt "github.com/labstack/echo-jwt/v5"
 	"github.com/labstack/echo/v5"
 )
 
+func AuthenJWT(p abstract.InterfaceCrypto) echo.MiddlewareFunc {
+	return echojwt.WithConfig(echojwt.Config{
+		ContextKey: string(consts.ExprContextKeyJWT),
+		KeyFunc:    crypto.NewJWTKeyFunc(p.GetJwtAccessTokenDeckey().(ed25519.PublicKey)),
+		NewClaimsFunc: func(c *echo.Context) jwt.Claims {
+			return &model.JwtAccessTokenPayload{}
+		},
+	})
+}
+
+/*//abandoned
 func ErrorRecovery() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx *echo.Context) error {
@@ -43,7 +56,7 @@ func ErrorRecovery() echo.MiddlewareFunc {
 			return Respond(ctx, http.StatusInternalServerError, string(consts.ExprHttpInternalServerError))
 		}
 	}
-}
+}*/
 
 func logPrintError(ctx *echo.Context, err error) string {
 	return ("error::" + err.Error() +

@@ -6,7 +6,8 @@ require (
 	github.com/alexedwards/argon2id v1.0.0
 	github.com/atomreforge/confx v1.0.1
 	github.com/golang-jwt/jwt/v5 v5.3.1
-	github.com/labstack/echo/v5 v5.3.0
+	github.com/labstack/echo-jwt/v5 v5.0.2
+	github.com/labstack/echo/v5 v5.2.1
 	github.com/pwntr/tinter v1.2.0
 	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.31.2
