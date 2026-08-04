@@ -1,4 +1,4 @@
-package handler
+package middleware
 
 import (
 	abstract "github.com/atomreforge/daizy-night-server/internal/abstract/interface"
@@ -22,7 +22,7 @@ func ErrorRespondHttp(ctx *echo.Context, err error) error {
 } */
 
 func RespondCustom(ctx *echo.Context, errapp abstract.InterfaceAppError) error {
-	return ctx.JSON(errapp.HttpAbort(),
+	return ctx.JSON(errapp.StatusCode(),
 		map[string]string{"message": string(errapp.Error())})
 }
 

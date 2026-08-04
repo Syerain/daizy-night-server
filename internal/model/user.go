@@ -27,3 +27,9 @@ type User struct {
 	GitHubID    *int64  `gorm:"unique"`
 	GitHubLogin *string `gorm:"unique"` // github login username for presentation
 }
+
+/*
+// abandoned
+type DTOUser struct {
+	Username string `json:"username" form:"username" query:"username"`
+}*/

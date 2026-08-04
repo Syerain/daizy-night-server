@@ -22,7 +22,7 @@ https://github.com/Syerain/dnappcli
 ### Get
 
 ```bash
-git clone github.com/atomreforge/daizy-night-server.git
+git clone https://github.com/atomreforge/daizy-night-server.git
 ```
 
 ### Configuration

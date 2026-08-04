@@ -5,9 +5,8 @@ import (
 	"log/slog"
 	"net/http"
 
-	abstract "github.com/atomreforge/daizy-night-server/internal/abstract/interface"
 	"github.com/atomreforge/daizy-night-server/internal/consts"
-	"github.com/atomreforge/daizy-night-server/internal/errs"
+	mid "github.com/atomreforge/daizy-night-server/internal/middleware"
 	"github.com/atomreforge/daizy-night-server/internal/model"
 
 	"github.com/labstack/echo/v5"
@@ -20,35 +19,37 @@ func (h *HandlerComplex) HandleRegister(ctx *echo.Context) error {
 
 	// failed to build RegisterBody
 	if err != nil {
-		slog.Error(err.Error())
-		return Respond(ctx, http.StatusInternalServerError, string(consts.ExprHttpInternalServerError))
+		return err
 	}
 
 	// failure during param validation
 	if err := ValidateRegisterParams(b); err != nil {
-		if errapp, ok := errs.Easx[abstract.InterfaceAppError](err); ok {
-			slog.Error(errapp.Error())
-			return RespondCustom(ctx, errapp)
+		return err
+		/*if errapp, ok := errs.Easx[abstract.InterfaceAppError](err); ok {
+			return errs.BuildBadRequest(errapp.Error())
 		}
-		slog.Error(err.Error())
-		return Respond(ctx, http.StatusInternalServerError, string(consts.ExprHttpInternalServerError))
+		return errs.BuildInternal(string(consts.ExprHttpInternalServerError))*/
 	}
 
 	// execute reg service
 	if err := h.ServiceUser.Register(b); err != nil {
-		if errapp, ok := errs.Easx[abstract.InterfaceAppError](err); ok {
-			slog.Error(errapp.Error())
-			return RespondCustom(ctx, errapp)
+		return err
+		/*if errapp, ok := errs.Easx[abstract.InterfaceAppError](err); ok {
+			return errs.BuildBadRequest(errapp.Error())
 		}
-		slog.Error(err.Error())
-		return Respond(ctx, http.StatusInternalServerError, string(consts.ExprHttpInternalServerError))
+		return errs.BuildInternal(string(consts.ExprHttpInternalServerError))*/
 	}
 
 	// process success
 	//return ctx.JSON(http.StatusOK, map[string]string{"message": "ok"})
 	u, err := h.ServiceUser.Userrepo.GetUserByUsername(b.Username)
-	slog.Info("succeeded register; username: " + b.Username + " atomid: " + fmt.Sprint(u.AtomID))
-	return Respond(ctx, http.StatusOK, string(consts.ExprHttpOk))
+
+	/*//corner case; wont appear.
+	if err != nil {
+		return err
+	}*/
+	slog.Info("succeeded register; user::" + b.Username + " atomid::" + fmt.Sprint(u.AtomID))
+	return mid.Respond(ctx, http.StatusOK, string(consts.ExprHttpOk))
 }
 
 func Bind[T any](ctx *echo.Context) (*T, error) {

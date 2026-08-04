@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"log/slog"
+	"net/http"
 	"strings"
 	"time"
 
@@ -34,9 +35,7 @@ func (p *ProviderCrypto) AnalyzeRegistercode(codeStr string) (*model.Registercod
 	parts := strings.SplitN(codeStr, ".", 2)
 	if len(parts) != 2 {
 		slog.Error("Invalid registercode format")
-		return nil, &errs.ErrRegistercode{
-			Type: errs.RegistercodeFormat,
-		}
+		return nil, errs.BuildErrRegistercode(errs.RegistercodeFormat, http.StatusBadRequest)
 	}
 
 	// transform
@@ -47,9 +46,7 @@ func (p *ProviderCrypto) AnalyzeRegistercode(codeStr string) (*model.Registercod
 	// verify sig
 	if !ed25519.Verify(p.RegistercodeDeckey, []byte(payloadStr), sig) {
 		slog.Error("Registercode signature verification failed")
-		return nil, &errs.ErrRegistercode{
-			Type: errs.RegistercodeAuthenFailed,
-		}
+		return nil, errs.BuildErrRegistercode(errs.RegistercodeAuthenFailed, http.StatusBadRequest)
 	}
 
 	// decode payload to struct
@@ -57,9 +54,7 @@ func (p *ProviderCrypto) AnalyzeRegistercode(codeStr string) (*model.Registercod
 	err := json.Unmarshal([]byte(payloadStr), &payload)
 	if err != nil {
 		slog.Error("Failed to unmarshal registercode", "error", err)
-		return nil, &errs.ErrRegistercode{
-			Type: errs.RegistercodeUnmarshalFailed,
-		}
+		return nil, errs.BuildErrRegistercode(errs.RegistercodeUnmarshalFailed, http.StatusBadRequest)
 	}
 	return &payload, nil
 }

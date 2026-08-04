@@ -49,10 +49,7 @@ func (s *ServiceUser) Register(b *model.RegisterBody) error {
 		} //it can only be ErrRegistercode
 
 		if !s.Crypto.VerifyRegistercodePayload(*payload) {
-			return &errs.ErrRegistercode{
-				Type: errs.RegistercodeUnusableOutdated,
-				Http: 400,
-			}
+			return errs.BuildErrRegistercode(errs.RegistercodeUnusableOutdated, 400)
 		}
 
 		err = s.Userrepo.CreateUser(&model.User{
@@ -63,14 +60,9 @@ func (s *ServiceUser) Register(b *model.RegisterBody) error {
 		})
 
 		if err != nil {
-			slog.Error("failure during creating user;" + err.Error())
+			//slog.Error("failure during creating user;" + err.Error())
 			if errors.Is(err, gorm.ErrDuplicatedKey) {
-				return &errs.ErrValidation{
-					Type:  errs.ValidationKeyDuplicatedValue,
-					Http:  400,
-					Field: string(consts.ExprIndetermined),
-					Value: string(consts.ExprIndetermined),
-				}
+				return errs.BuildErrValidation(errs.ValidationKeyDuplicatedValue, 400, string(consts.ExprIndetermined), string(consts.ExprIndetermined))
 			}
 			return err
 		}
@@ -101,10 +93,7 @@ func (s *ServiceUser) Login(b model.LoginBody) (success bool, accessToken string
 					return false, "", "", err
 				}
 				if !matched {
-					return false, "", "", &errs.ErrUserLogin{
-						Type: errs.UserLoginParamsPasswordIncorrect,
-						Http: http.StatusBadRequest,
-					}
+					return false, "", "", errs.BuildErrUserLogin(errs.UserLoginParamsPasswordIncorrect, http.StatusBadRequest, user.Username)
 				}
 
 				payloadAccessToken := model.JwtAccessTokenPayload{
@@ -137,28 +126,17 @@ func (s *ServiceUser) Login(b model.LoginBody) (success bool, accessToken string
 				return true, accessToken, refreshToken, nil
 
 			}
-			return false, "", "", &errs.ErrValidation{
-				Type:  errs.ValidationKeyNull,
-				Http:  http.StatusBadRequest,
-				Field: string(consts.ExprUsername),
-				Value: string(consts.ExprNull),
-			}
+			return false, "", "", errs.BuildErrValidation(errs.ValidationKeyNull, http.StatusBadRequest, string(consts.ExprUsername), string(consts.ExprNull))
 		}
 	// under constructing ..
 	case consts.LoginGithub:
 		{
-			return false, "", "", &errs.ErrSupport{
-				Type: errs.FeatureUnsupported,
-				Http: http.StatusBadRequest,
-			}
+			return false, "", "", errs.BuildErrSupport(errs.FeatureUnsupported, http.StatusBadRequest)
 		}
 	}
 
 	// wont arrive here. (hope so?)
-	return false, "", "", &errs.ErrSupport{
-		Type: errs.FeatureUnsupported,
-		Http: http.StatusBadRequest,
-	}
+	return false, "", "", errs.BuildErrSupport(errs.FeatureUnsupported, http.StatusBadRequest)
 }
 
 func (s *ServiceUser) RefreshAccessToken(rawToken string) (success bool, accessToken string, refreshToken string, err error) {

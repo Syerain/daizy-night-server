@@ -1,20 +1,28 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
+	"net/http"
 	"os"
 
+	abstract "github.com/atomreforge/daizy-night-server/internal/abstract/interface"
 	"github.com/atomreforge/daizy-night-server/internal/config"
+	"github.com/atomreforge/daizy-night-server/internal/consts"
 	"github.com/atomreforge/daizy-night-server/internal/crypto"
 	"github.com/atomreforge/daizy-night-server/internal/dbware"
+	"github.com/atomreforge/daizy-night-server/internal/errs"
 	"github.com/atomreforge/daizy-night-server/internal/handler"
 	"github.com/atomreforge/daizy-night-server/internal/router"
 	"github.com/atomreforge/daizy-night-server/internal/service"
 	"github.com/atomreforge/daizy-night-server/internal/utils"
 
+	mid "github.com/atomreforge/daizy-night-server/internal/middleware"
+
 	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 )
 
 type App struct {
@@ -72,9 +80,46 @@ func main() {
 		ServiceUser: svcUser,
 	}
 
-	// router
+	// Echo
 	e := router.New(handler)
 	e.Logger = utils.GetLogger()
+	e.HTTPErrorHandler = func(ctx *echo.Context, err error) {
+		if resp, uErr := echo.UnwrapResponse(ctx.Response()); uErr == nil {
+			if resp.Committed {
+				return
+			}
+		}
+		// set default to ISE
+		code := http.StatusInternalServerError
+		var sc echo.HTTPStatusCoder
+		if errors.As(err, &sc) {
+			if tmp := sc.StatusCode(); tmp != 0 {
+				code = tmp //http status code; not biz code
+				//slog.Error(err.Error())
+				errapp, ok := errs.Easx[abstract.InterfaceAppError](err)
+				if ok {
+					mid.RespondCustom(ctx, errapp)
+				} else {
+					mid.Respond(ctx, code, string(consts.ExprHttpInternalServerError))
+				}
+			} else {
+				mid.Respond(ctx, http.StatusInternalServerError, string(consts.ExprHttpInternalServerError))
+			}
+		}
+
+		/*var cErr error
+		if ctx.Request().Method == http.MethodHead {
+			cErr = ctx.NoContent(code)
+		} else {
+			cErr = ctx.File(fmt.Sprintf("%d.html", code)) // eg: 404.html
+		}
+		if cErr != nil {
+			ctx.Logger().Error("error page sending failed or not exists", "error", errors.Join(err, cErr))
+		}*/
+	}
+
+	e.Use(middleware.Recover())
+
 	addrport := net.JoinHostPort(cfg.Http.Address, fmt.Sprintf("%d", cfg.Http.Port))
 	slog.Info("Listening on " + addrport)
 	if err := e.Start(addrport); err != nil {

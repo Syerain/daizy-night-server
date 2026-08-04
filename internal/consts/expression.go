@@ -23,3 +23,9 @@ const (
 	ExprHttpInternalServerError expression = "internal server error"
 	ExprHttpOk                  expression = "ok"
 )
+
+// Biz
+const (
+	BizExprErrorUnknown    expression = "unknown error"
+	BizExprErrorBadRequest expression = "bad request"
+)

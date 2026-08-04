@@ -2,6 +2,12 @@ package errs
 
 type errType int
 
+// ErrType is the exported alias of errType.
+// It lets external packages (handler/service/crypto/dbware...) pass errType
+// constants (e.g. ValidationKeyNull) to the BuildErr* constructors, whose
+// parameter type must be visible outside the package.
+type ErrType = errType
+
 // we use negative expressions to describe errors.
 const (
 	Unknown errType = iota

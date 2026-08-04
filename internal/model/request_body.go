@@ -13,8 +13,8 @@ type RegisterBody struct {
 }
 
 type LoginBody struct {
-	Loginway  consts.Loginway
-	Atomid    uint
+	Loginway consts.Loginway
+	//Atomid    uint
 	Username  string
 	Password  string
 	Entrycode string

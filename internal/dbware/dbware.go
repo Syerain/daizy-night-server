@@ -58,10 +58,7 @@ func (p *ProviderDB) GetUserByUsername(name string) (*model.User, error) {
 	result := p.db.Where(&model.User{Username: name}).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, &errs.ErrDbRecord{
-				Type: errs.DbRecordUsernameNotFound,
-				Http: http.StatusBadRequest,
-			}
+			return nil, errs.BuildErrDbRecord(errs.DbRecordUsernameNotFound, http.StatusBadRequest)
 		}
 		return nil, result.Error
 	}

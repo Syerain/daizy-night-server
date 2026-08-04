@@ -14,7 +14,7 @@ func (e *ErrRegisterLogic) Error() string {
 		e.Type.Say())
 }
 
-func (e *ErrRegisterLogic) HttpAbort() int { return e.Http }
+func (e *ErrRegisterLogic) StatusCode() int { return e.Http }
 
 // params validation; http400;
 type ErrValidation struct {
@@ -33,7 +33,7 @@ func (e *ErrValidation) Error() string {
 		e.Value)
 }
 
-func (e *ErrValidation) HttpAbort() int { return e.Http }
+func (e *ErrValidation) StatusCode() int { return e.Http }
 
 type ErrUserLogin struct {
 	Type errType
@@ -48,7 +48,7 @@ func (e *ErrUserLogin) Error() string {
 		e.Type.Say())
 }
 
-func (e *ErrUserLogin) HttpAbort() int { return e.Http }
+func (e *ErrUserLogin) StatusCode() int { return e.Http }
 
 type ErrRegistercode struct {
 	Type errType
@@ -59,28 +59,28 @@ func (e *ErrRegistercode) Error() string {
 	return ("registercode failure: " +
 		e.Type.Say())
 }
-func (e *ErrRegistercode) HttpAbort() int { return e.Http }
+func (e *ErrRegistercode) StatusCode() int { return e.Http }
 
 type ErrSupport struct {
 	Type errType
 	Http int
 }
 
-func (e *ErrSupport) Error() string  { return e.Type.Say() }
-func (e *ErrSupport) HttpAbort() int { return e.Http }
+func (e *ErrSupport) Error() string   { return e.Type.Say() }
+func (e *ErrSupport) StatusCode() int { return e.Http }
 
 type ErrUnknown struct {
 	Type errType
 	Http int
 }
 
-func (e *ErrUnknown) Error() string  { return e.Type.Say() }
-func (e *ErrUnknown) HttpAbort() int { return e.Http }
+func (e *ErrUnknown) Error() string   { return e.Type.Say() }
+func (e *ErrUnknown) StatusCode() int { return e.Http }
 
 type ErrDbRecord struct {
 	Type errType
 	Http int
 }
 
-func (e *ErrDbRecord) Error() string  { return e.Type.Say() }
-func (e *ErrDbRecord) HttpAbort() int { return e.Http }
+func (e *ErrDbRecord) Error() string   { return e.Type.Say() }
+func (e *ErrDbRecord) StatusCode() int { return e.Http }
