@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"fmt"
+	"log/slog"
 	"net/http"
 
 	abstract "github.com/atomreforge/daizy-night-server/internal/abstract/interface"
@@ -18,27 +20,34 @@ func (h *HandlerComplex) HandleRegister(ctx *echo.Context) error {
 
 	// failed to build RegisterBody
 	if err != nil {
+		slog.Error(err.Error())
 		return Respond(ctx, http.StatusInternalServerError, string(consts.ExprHttpInternalServerError))
 	}
 
 	// failure during param validation
 	if err := ValidateRegisterParams(b); err != nil {
 		if errapp, ok := errs.Easx[abstract.InterfaceAppError](err); ok {
+			slog.Error(errapp.Error())
 			return RespondCustom(ctx, errapp)
 		}
+		slog.Error(err.Error())
 		return Respond(ctx, http.StatusInternalServerError, string(consts.ExprHttpInternalServerError))
 	}
 
 	// execute reg service
 	if err := h.ServiceUser.Register(b); err != nil {
 		if errapp, ok := errs.Easx[abstract.InterfaceAppError](err); ok {
+			slog.Error(errapp.Error())
 			return RespondCustom(ctx, errapp)
 		}
+		slog.Error(err.Error())
 		return Respond(ctx, http.StatusInternalServerError, string(consts.ExprHttpInternalServerError))
 	}
 
 	// process success
 	//return ctx.JSON(http.StatusOK, map[string]string{"message": "ok"})
+	u, err := h.ServiceUser.Userrepo.GetUserByUsername(b.Username)
+	slog.Info("succeeded register; username: " + b.Username + " atomid: " + fmt.Sprint(u.AtomID))
 	return Respond(ctx, http.StatusOK, string(consts.ExprHttpOk))
 }
 
