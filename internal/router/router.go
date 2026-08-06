@@ -18,8 +18,8 @@ func New(
 	// init
 	e := echo.New()
 
-	// rate limiter
-	e.Use(mid.RateLimit(cfg))
+	e.Use(mid.Inject())       // injector
+	e.Use(mid.RateLimit(cfg)) // rate limiter
 
 	// public routes
 	e.POST("/api/v1/register", h.HandleRegister)

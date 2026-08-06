@@ -102,26 +102,30 @@ func Run() {
 				return
 			}
 		}
-		// set default to ISE
-		code := http.StatusInternalServerError
+
+		utils.Layer(ctx).Error("request failure",
+			slog.String("callchain", fmt.Sprint(utils.GetCallChain(ctx))),
+			slog.String("method", ctx.Request().Method),
+			slog.String("path", ctx.Request().URL.Path),
+			slog.String("errtype", fmt.Sprintf("%T", err)),
+			slog.Any("details", err.Error()),
+		)
+
+		if errapp, ok := errs.Easx[abstract.InterfaceAppError](err); ok {
+			mid.RespondCustom(ctx, errapp)
+			return
+		}
+
 		var sc echo.HTTPStatusCoder
+		// set defult status code to IDE as a fallback
+		stat := http.StatusInternalServerError
 		if errors.As(err, &sc) {
 			if tmp := sc.StatusCode(); tmp != 0 {
-				code = tmp //http status code; not biz code
-				//slog.Error(err.Error())
-				errapp, ok := errs.Easx[abstract.InterfaceAppError](err)
-				if ok {
-					slog.Error(errapp.Error())
-					mid.RespondCustom(ctx, errapp)
-				} else {
-					slog.Error(err.Error())
-					mid.Respond(ctx, code, string(consts.ExprHttpInternalServerError))
-				}
-			} else {
-				slog.Error(err.Error())
-				mid.Respond(ctx, http.StatusInternalServerError, string(consts.ExprHttpInternalServerError))
+				stat = tmp
 			}
 		}
+
+		mid.Respond(ctx, stat, string(consts.HttpExprInternalServerError))
 	}
 
 	e.Use(middleware.Recover())

@@ -12,6 +12,7 @@ type BizError struct {
 
 func (e *BizError) Error() string   { return e.Message }
 func (e *BizError) StatusCode() int { return e.http }
+func (e *BizError) Respond() string { return e.Message }
 
 func BuildBadRequest(msg string) *BizError {
 	return &BizError{http: http.StatusBadRequest, Message: msg}

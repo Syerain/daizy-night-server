@@ -10,12 +10,17 @@ import (
 	"github.com/atomreforge/daizy-night-server/internal/consts"
 	"github.com/atomreforge/daizy-night-server/internal/errs"
 	mid "github.com/atomreforge/daizy-night-server/internal/middleware"
+	"github.com/atomreforge/daizy-night-server/internal/utils"
 	"gorm.io/gorm"
 
 	"github.com/labstack/echo/v5"
 )
 
 func (h *HandlerComplex) HandleRegister(ctx *echo.Context) error {
+	// record flow chain (monotonically accumulating)
+	utils.AppendCallChain(ctx, string(consts.ModExprHandlerRegister))
+	utils.AppendCallChain(ctx, string(consts.ModExprServiceUser))
+
 	slog.Info("got register request")
 	req, err := Bind[v1.RegisterRequest](ctx)
 
@@ -57,7 +62,7 @@ func (h *HandlerComplex) HandleRegister(ctx *echo.Context) error {
 	}
 
 	slog.Info("succeeded register; user::" + req.Username + " uid::" + fmt.Sprint(u.ID))
-	return mid.Respond(ctx, http.StatusOK, string(consts.ExprHttpOk))
+	return mid.Respond(ctx, http.StatusOK, string(consts.HttpExprOk))
 }
 
 func Bind[T any](ctx *echo.Context) (*T, error) {

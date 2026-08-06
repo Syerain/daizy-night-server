@@ -7,7 +7,7 @@ import (
 
 func RespondCustom(ctx *echo.Context, errapp abstract.InterfaceAppError) error {
 	return ctx.JSON(errapp.StatusCode(),
-		map[string]string{"message": string(errapp.Error())})
+		map[string]string{"message": string(errapp.Respond())})
 }
 
 func Respond(ctx *echo.Context, status int, msg string) error {

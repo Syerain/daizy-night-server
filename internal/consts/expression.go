@@ -2,6 +2,7 @@ package consts
 
 type expression string
 
+// ~
 const (
 	ExprNull         expression = "$NULL"
 	ExprBlank        expression = "$BLANK"
@@ -23,28 +24,26 @@ const (
 
 	ExprEnckey expression = "Crypto-PrivateKey"
 	ExprDeckey expression = "Crypto-PublicKey"
-
-	ExprRegister expression = "Process-Register"
-	ExprLogin    expression = "Process-Login"
-
-	ExprHttpInternalServerError expression = "internal server error"
-	ExprHttpOk                  expression = "ok"
-	ExprHttpTooManyRequests     expression = "too many requests"
 )
 
-// Biz
+// http response text
 const (
-	BizExprErrorUnknown    expression = "unknown error"
-	BizExprErrorBadRequest expression = "bad request"
+	HttpExprInternalServerError expression = "internal server error"
+	HttpExprOk                  expression = "ok"
+	HttpExprTooManyRequests     expression = "too many requests"
+	HttpExprErrorUnknown        expression = "unknown error"
+	HttpExprErrorBadRequest     expression = "bad request"
 )
 
 // program
 const (
 	ExprContextKeyJWT expression = "jwt_user"
 	ExprUserID        expression = "uid"
+	ExprTraceid       expression = "traceid"
 )
 
 // json
+// only expressions in the json body can be place here.
 const (
 	JsonExprAtomid       expression = "atomid"
 	JsonExprUsername     expression = "username"
@@ -55,4 +54,36 @@ const (
 	JsonExprAccessToken  expression = "access_token"
 	JsonExprRefreshToken expression = "refresh_token"
 	JsonExprRole         expression = "role"
+	JsonExprTraceid      expression = "traceid"
+	JsonExprCallChain    expression = "call_chain"
+)
+
+// process
+const (
+	ExprRegister expression = "Process-Register"
+	ExprLogin    expression = "Process-Login"
+)
+
+// module
+const (
+	ModExprMain expression = "main"
+
+	ModExprHandler         expression = "handler"
+	ModExprHandlerRegister expression = "Handler-Register"
+	ModExprHandlerLogin    expression = "Handler-Login"
+	ModExprHandlerAdmin    expression = "Handler-Admin"
+	ModExprHandlerMe       expression = "Handler-Me"
+
+	ModExprService      expression = "service"
+	ModExprServiceUser  expression = "Service-User"
+	ModExprServiceToken expression = "Service-Token"
+	ModExprServiceAdmin expression = "Service-Admin"
+
+	ModExprMiddlware            expression = "middleware"
+	ModExprMiddlwareAuthen      expression = "Middleware-Authen"
+	ModExprMiddlwareInjector    expression = "Middleware-Injector"
+	ModExprMiddlwareRateLimiter expression = "Middleware-RateLimiter"
+	ModExprMiddlwareRoleControl expression = "Middleware-RoleControl"
+
+	ModExprUtils expression = "utils"
 )

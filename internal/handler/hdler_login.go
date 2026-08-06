@@ -5,11 +5,17 @@ import (
 	"net/http"
 
 	v1 "github.com/atomreforge/daizy-night-server/internal/api/v1"
+	"github.com/atomreforge/daizy-night-server/internal/consts"
 	mid "github.com/atomreforge/daizy-night-server/internal/middleware"
+	"github.com/atomreforge/daizy-night-server/internal/utils"
 	"github.com/labstack/echo/v5"
 )
 
 func (h *HandlerComplex) HandleLogin(ctx *echo.Context) error {
+	// record flow chain (monotonically accumulating)
+	utils.AppendCallChain(ctx, string(consts.ModExprHandlerLogin))
+	utils.AppendCallChain(ctx, string(consts.ModExprServiceUser))
+
 	req, err := Bind[v1.LoginRequest](ctx)
 	if err != nil {
 		return err

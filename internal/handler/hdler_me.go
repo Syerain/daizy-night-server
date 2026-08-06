@@ -8,11 +8,16 @@ import (
 	"github.com/atomreforge/daizy-night-server/internal/consts"
 	mid "github.com/atomreforge/daizy-night-server/internal/middleware"
 	"github.com/atomreforge/daizy-night-server/internal/model"
+	"github.com/atomreforge/daizy-night-server/internal/utils"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v5"
 )
 
 func (h *HandlerComplex) HandleMe(ctx *echo.Context) error {
+	// record flow chain (monotonically accumulating)
+	utils.AppendCallChain(ctx, string(consts.ModExprHandlerMe))
+	utils.AppendCallChain(ctx, string(consts.ModExprServiceUser))
+
 	token, err := echo.ContextGet[*jwt.Token](ctx, string(consts.ExprContextKeyJWT))
 	if err != nil {
 		return err

@@ -39,7 +39,7 @@ func RateLimit(cfg *config.Config) echo.MiddlewareFunc {
 			return err
 		},
 		DenyHandler: func(c *echo.Context, identifier string, err error) error {
-			return echo.NewHTTPError(http.StatusTooManyRequests, string(consts.ExprHttpTooManyRequests))
+			return echo.NewHTTPError(http.StatusTooManyRequests, string(consts.HttpExprTooManyRequests))
 		},
 	})
 
