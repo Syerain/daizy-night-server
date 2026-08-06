@@ -5,8 +5,8 @@ import (
 )
 
 type InterfaceCrypto interface {
-	SignRegistercode(payload model.RegistercodePayload) (string, error)
-	AnalyzeRegistercode(codeStr string) (*model.RegistercodePayload, error)
+	SignRegistercode(payload model.RegistercodePayload) (model.RegistercodeRawHex, error)
+	AnalyzeRegistercode(codeStr model.RegistercodeRawHex) (*model.RegistercodePayload, error)
 	VerifyRegistercodePayload(payload model.RegistercodePayload) bool
 
 	SignAccessToken(payload model.JwtAccessTokenPayload) (string, error)

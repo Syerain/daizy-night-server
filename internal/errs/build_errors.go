@@ -24,6 +24,6 @@ func BuildErrUnknown(errtype ErrType, http int) *ErrUnknown {
 	return &ErrUnknown{Type: errtype, Http: http}
 }
 
-func BuildErrDbRecord(errtype ErrType, http int) *ErrDbRecord {
-	return &ErrDbRecord{Type: errtype, Http: http}
+func BuildErrDbRecord(errtype ErrType, http int, field string) *ErrDbRecord {
+	return &ErrDbRecord{Type: errtype, Http: http, Field: field}
 }

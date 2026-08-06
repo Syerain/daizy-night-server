@@ -35,7 +35,11 @@ func NewDBProvider(ctx struct {
 		return nil, err
 	}
 
-	if err := db.AutoMigrate(&model.User{}, &model.RefreshToken{}); err != nil {
+	if err := db.AutoMigrate(
+		&model.User{},
+		&model.RefreshToken{},
+		&model.RegistercodeRecord{},
+	); err != nil {
 		return nil, err
 	}
 
@@ -58,3 +62,5 @@ func (p *ProviderDB) Close() error {
 	}
 	return sql.Close()
 }
+
+func (p *ProviderDB) DB() *gorm.DB { return p.db }

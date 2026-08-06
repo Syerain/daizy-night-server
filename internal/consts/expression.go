@@ -10,12 +10,16 @@ const (
 	ExprUnreachableCase    expression = "unreachable case contacted"
 	ExprUnsupportedFeature expression = "feature unsupported"
 
-	ExprAtomid       expression = "Attr-AtomID"
+	ExprFailedRegistercodeWithdraw expression = "failed to withdraw registercode"
+
+	//ExprAtomid       expression = "Attr-AtomID"
 	ExprUsername     expression = "Attr-Username"
 	ExprNickname     expression = "Attr-Nickname"
 	ExprPassword     expression = "Attr-Password"
 	ExprEntrycode    expression = "Attr-Entrycode"
 	ExprRegistercode expression = "Attr-Registercode"
+
+	ExprUser expression = "User"
 
 	ExprEnckey expression = "Crypto-PrivateKey"
 	ExprDeckey expression = "Crypto-PublicKey"
@@ -25,6 +29,7 @@ const (
 
 	ExprHttpInternalServerError expression = "internal server error"
 	ExprHttpOk                  expression = "ok"
+	ExprHttpTooManyRequests     expression = "too many requests"
 )
 
 // Biz
@@ -36,6 +41,7 @@ const (
 // program
 const (
 	ExprContextKeyJWT expression = "jwt_user"
+	ExprUserID        expression = "uid"
 )
 
 // json

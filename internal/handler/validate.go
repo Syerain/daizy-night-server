@@ -3,17 +3,19 @@ package handler
 import (
 	"net/http"
 	"reflect"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/atomreforge/daizy-night-server/internal/consts"
 	"github.com/atomreforge/daizy-night-server/internal/errs"
 	"github.com/atomreforge/daizy-night-server/internal/model"
+	"github.com/atomreforge/daizy-night-server/internal/utils"
 )
 
 /* you mustn't trust frontend completely XD */
 
 // it only check params and it's not its task to
-func ValidateRegisterParams(b *model.RegisterBody) error {
+func ValidateRegisterParams(b model.RegisterBody) error {
 	// username
 	if _, err := validateNonNull(b.Username); err != nil {
 		return errs.BuildErrValidation(errs.ValidationKeyNull, http.StatusBadRequest, string(consts.ExprUsername), string(consts.ExprBlank))
@@ -43,9 +45,14 @@ func ValidateRegisterParams(b *model.RegisterBody) error {
 	}
 
 	// registercode
+	if ok, err := ValidateFormatRegistercode(b.Registercode); !ok {
+		return err
+	}
+
+	/*// registercode
 	if _, err := validateNonNull(b.Registercode); err != nil {
 		return errs.BuildErrValidation(errs.ValidationKeyNull, http.StatusBadRequest, string(consts.ExprRegistercode), string(consts.ExprBlank))
-	}
+	}*/
 
 	return nil
 }
@@ -63,16 +70,7 @@ func ValidateLoginParams(b *model.LoginBody) error {
 
 	case consts.LoginGithub:
 		return errs.BuildErrSupport(errs.FeatureUnsupported, http.StatusBadRequest)
-		/* under constructing
-		// OAuth 登录: atomid 非零
-		if b.Atomid == 0 {
-			return &errs.ErrValidation{
-				Type:  errs.ValidationKeyNull,
-				Field: string(constants.ExprAtomid),
-				Value: string(constants.ExprNull),
-			}
-		} */
-
+		/* under constructing*/
 	default:
 		return errs.BuildErrValidation(errs.ValidationKeyNull, http.StatusBadRequest, string(consts.ExprLogin), string(b.Loginway))
 	}
@@ -115,6 +113,22 @@ func validateCharValid(s string) (bool, error) {
 			(c >= '0' && c <= '9')) {
 			return false, errs.BuildErrValidation(errs.ValidationKeyInvalidChar, http.StatusBadRequest, "", s)
 		}
+	}
+	return true, nil
+}
+
+func ValidateFormatRegistercode(c model.RegistercodeRawHex) (bool, error) {
+	if c == "" {
+		return false, errs.BuildErrValidation(errs.ValidationKeyNull, http.StatusBadRequest, string(consts.ExprRegistercode), string(consts.ExprNull))
+	}
+	// 用 Split after last "." 确保恰好两部分
+	i := strings.LastIndex(string(c), ".")
+	if i <= 0 || i == len(c)-1 {
+		return false, errs.BuildErrValidation(errs.ValidationKeyBadFormat, http.StatusBadRequest, string(consts.ExprRegistercode), c.String())
+	}
+	payloadHex, sigHex := string(c)[:i], string(c)[i+1:]
+	if !(utils.IsHex(payloadHex) && utils.IsHex(sigHex)) {
+		return false, errs.BuildErrValidation(errs.ValidationKeyBadFormat, http.StatusBadRequest, string(consts.ExprRegistercode), c.String())
 	}
 	return true, nil
 }

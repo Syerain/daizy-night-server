@@ -11,7 +11,7 @@ import (
 
 type RefreshToken struct {
 	gorm.Model
-	AtomID    uint   `gorm:"not null"`
+	Uid       uint   `gorm:"not null"`
 	TokenHash string `gorm:"unique; not null"`
 	RevokedAt *time.Time
 }
@@ -20,7 +20,7 @@ type JwtAccessTokenPayload struct {
 	jwt.RegisteredClaims
 
 	// business
-	AtomID   uint        `json:"atomid"`
+	Uid      uint        `json:"uid"`
 	Username string      `json:"username"`
 	Role     consts.Role `json:"role"`
 }
@@ -28,6 +28,7 @@ type JwtAccessTokenPayload struct {
 type JwtRefreshTokenPayload struct {
 	jwt.RegisteredClaims
 
-	AtomID   uint   `json:"atomid"`
-	Username string `json:"username"`
+	Uid      uint        `json:"uid"`
+	Username string      `json:"username"`
+	Role     consts.Role `json:"role"`
 }

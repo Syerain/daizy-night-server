@@ -10,26 +10,20 @@ import (
 
 type User struct {
 	gorm.Model
-	AtomID    uint   `gorm:"unique;not null"`
+	// notice that 'atomid' was replaced by 'gorm.ID' due to async problems
 	Username  string `gorm:"unique;not null"`
 	Nickname  string `gorm:"not null"`
-	Email     string `gorm:"not null"`
+	Email     string
 	Telephone string
 
 	RegisterTime time.Time
 
-	Registercode string
-	PasswordHash string `gorm:"not null" json:"-"`
+	Registercode RegistercodeRawHex `gorm:"not null;unique"`
+	PasswordHash string             `gorm:"not null" json:"-"`
 
 	Role consts.Role `gorm:"not null;default:'user'"`
 
 	// Github OAuth:
-	GitHubID    *int64  `gorm:"unique"`
-	GitHubLogin *string `gorm:"unique"` // github login username for presentation
+	GitHubID    *int64 `gorm:"unique"`
+	GitHubLogin string `gorm:"unique"` // github login username for presentation
 }
-
-/*
-// abandoned
-type DTOUser struct {
-	Username string `json:"username" form:"username" query:"username"`
-}*/

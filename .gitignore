@@ -28,4 +28,9 @@ temp/
 
 # Go specific
 /vendor/
-main
+
+# test env
+config.test.yaml
+config.yaml
+/test/
+

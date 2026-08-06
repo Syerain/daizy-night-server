@@ -16,21 +16,23 @@ import (
 	"gorm.io/gorm"
 )
 
+var _ abstract.InterfaceServiceUser = (*ServiceUser)(nil)
+
 type ServiceUser struct {
-	Userrepo  abstract.InterfaceUserRepo
-	Tokenrepo abstract.InterfaceTokenRepo
+	RepoUser  abstract.InterfaceRepoUser
+	RepoToken abstract.InterfaceRepoToken
 	Crypto    abstract.InterfaceCrypto
 }
 
-func NewServiceUser(repo abstract.InterfaceUserRepo, tokenrepo abstract.InterfaceTokenRepo, crypto abstract.InterfaceCrypto) *ServiceUser {
+func NewServiceUser(repouser abstract.InterfaceRepoUser, repotoken abstract.InterfaceRepoToken, crypto abstract.InterfaceCrypto) *ServiceUser {
 	return &ServiceUser{
-		Userrepo:  repo,
-		Tokenrepo: tokenrepo,
+		RepoUser:  repouser,
+		RepoToken: repotoken,
 		Crypto:    crypto,
 	}
 }
 
-func (s *ServiceUser) Register(b *model.RegisterBody) error {
+func (s *ServiceUser) Register(b model.RegisterBody) error {
 	slog.Info("service processing register ...")
 
 	// salt psw
@@ -52,7 +54,7 @@ func (s *ServiceUser) Register(b *model.RegisterBody) error {
 			return errs.BuildErrRegistercode(errs.RegistercodeUnusableOutdated, 400)
 		}
 
-		err = s.Userrepo.CreateUser(&model.User{
+		err = s.RepoUser.CreateUser(&model.User{
 			Username:     b.Username,
 			Nickname:     b.Nickname,
 			PasswordHash: passwordHash,
@@ -82,7 +84,7 @@ func (s *ServiceUser) Login(b model.LoginBody) (success bool, accessToken string
 	case consts.LoginLegacy:
 		{
 			if b.Username != "" {
-				user, err := s.Userrepo.GetUserByUsername(b.Username)
+				user, err := s.RepoUser.GetUserByUsername(b.Username)
 				// db error during GetUser
 				if err != nil {
 					return false, "", "", err
@@ -97,12 +99,12 @@ func (s *ServiceUser) Login(b model.LoginBody) (success bool, accessToken string
 				}
 
 				payloadAccessToken := model.JwtAccessTokenPayload{
-					AtomID:   user.AtomID,
+					Uid:      user.ID,
 					Username: user.Username,
 					Role:     user.Role,
 				}
 				payloadRefreshToken := model.JwtRefreshTokenPayload{
-					AtomID:   user.AtomID,
+					Uid:      user.ID,
 					Username: user.Username,
 				}
 
@@ -118,7 +120,7 @@ func (s *ServiceUser) Login(b model.LoginBody) (success bool, accessToken string
 					return false, "", "", err
 				}
 
-				if err := s.Tokenrepo.SaveRefreshToken(user.AtomID, refreshToken); err != nil {
+				if err := s.RepoToken.SaveRefreshToken(user.ID, refreshToken); err != nil {
 					slog.Error(err.Error())
 					return false, "", "", err
 				}
@@ -145,18 +147,18 @@ func (s *ServiceUser) RefreshAccessToken(rawToken string) (success bool, accessT
 		return false, "", "", err
 	}
 
-	valid, err := s.Tokenrepo.GetRefreshToken(payload.AtomID, rawToken)
+	valid, err := s.RepoToken.GetRefreshToken(payload.Uid, rawToken)
 	if err != nil || !valid {
 		return false, "", "", err
 	}
 
-	err = s.Tokenrepo.RevokeUserTokens(payload.AtomID)
+	err = s.RepoToken.RevokeUserTokens(payload.Uid)
 	if err != nil {
 		return false, "", "", err
 	}
 
 	payloadAccess := model.JwtAccessTokenPayload{
-		AtomID:   payload.AtomID,
+		Uid:      payload.Uid,
 		Username: payload.Username,
 	}
 	accessToken, err = s.Crypto.SignAccessToken(payloadAccess)
@@ -165,7 +167,7 @@ func (s *ServiceUser) RefreshAccessToken(rawToken string) (success bool, accessT
 	}
 
 	payloadRefresh := model.JwtRefreshTokenPayload{
-		AtomID:   payload.AtomID,
+		Uid:      payload.Uid,
 		Username: payload.Username,
 	}
 	refreshToken, err = s.Crypto.SignRefreshToken(payloadRefresh)
@@ -173,9 +175,27 @@ func (s *ServiceUser) RefreshAccessToken(rawToken string) (success bool, accessT
 		return false, "", "", err
 	}
 
-	err = s.Tokenrepo.SaveRefreshToken(payload.AtomID, refreshToken)
+	err = s.RepoToken.SaveRefreshToken(payload.Uid, refreshToken)
 	if err != nil {
 		return false, "", "", err
 	}
 	return true, accessToken, refreshToken, nil
+}
+
+func (s *ServiceUser) GetInfoMineByUid(uid uint) (*model.InfoMe, error) {
+	user, err := s.RepoUser.GetUserByUid(uid)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.InfoMe{
+		Uid:          user.ID,
+		Username:     user.Username,
+		Nickname:     user.Nickname,
+		Email:        user.Email,
+		RegisterTime: user.RegisterTime,
+		Role:         user.Role,
+		GitHubID:     user.GitHubID,
+		GitHubLogin:  user.GitHubLogin,
+	}, nil
 }

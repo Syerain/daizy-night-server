@@ -5,5 +5,7 @@ import (
 )
 
 type HandlerComplex struct {
-	ServiceUser *service.ServiceUser
+	ServiceUser  *service.ServiceUser
+	ServiceCode  *service.ServiceCode
+	ServiceAdmin *service.ServiceAdmin
 }

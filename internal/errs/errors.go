@@ -78,8 +78,9 @@ func (e *ErrUnknown) Error() string   { return e.Type.Say() }
 func (e *ErrUnknown) StatusCode() int { return e.Http }
 
 type ErrDbRecord struct {
-	Type errType
-	Http int
+	Type  errType
+	Http  int
+	Field string
 }
 
 func (e *ErrDbRecord) Error() string   { return e.Type.Say() }

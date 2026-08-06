@@ -11,17 +11,20 @@ type ErrType = errType
 // we use negative expressions to describe errors.
 const (
 	Unknown errType = iota
+	Undefined
 
 	ValidationKeyNull
 	ValidationKeyOverLength
 	ValidationKeyInvalidLength
 	ValidationKeyInvalidChar
 	ValidationKeyDuplicatedValue
+	ValidationKeyBadFormat
 
 	ValidationCryptoUnexpectedSigningMethod
 
 	// differs from RepeatedUserName
 	UserExists
+	UserUnknown
 
 	UserLoginParamsPasswordIncorrect
 
@@ -49,7 +52,8 @@ func (t *errType) Say() string {
 	switch *t {
 	case Unknown:
 		return "unknown error"
-
+	case Undefined:
+		return "undefined error"
 	case ValidationKeyNull:
 		return "must not be null"
 	case ValidationKeyOverLength:
@@ -89,9 +93,11 @@ func (t *errType) Say() string {
 		return "db record not found"
 	case DbRecordUsernameNotFound:
 		return "unknown user"
+
 	case ValidationCryptoUnexpectedSigningMethod:
 		return "expected signing method of public key"
-
+	case ValidationKeyBadFormat:
+		return "key bad format"
 	}
 	return "undefined error type"
 }

@@ -1,0 +1,32 @@
+main:
+  isDebugMode: false
+
+http:
+  port: 4703
+  address: "127.0.0.1"
+  rateLimit:
+    enabled: false
+    rate: 10
+    burst: 30
+    expiresIn: 3m
+  
+database:
+  isDebugMode: false
+  DSN: "./test/data.db"
+
+log:
+  isColored: true
+
+# the keys below are only for test
+security:
+  registercodeEnckey: ""
+  registercodeDeckey: ""
+  passwordEnckey: ""
+  passwordDeckey: ""
+  jwtAccessTokenEnckey: ""
+  jwtAccessTokenDeckey: ""
+  jwtRefreshTokenEnckey: ""
+  jwtRefreshTokenDeckey: ""
+  # the only supported time units are: h, m, s, ms, us, ns
+  jwtAccessTokenExpireTime: 15m
+  jwtRefreshTokenExpireTime: 168h

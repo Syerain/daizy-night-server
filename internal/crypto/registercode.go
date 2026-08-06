@@ -14,7 +14,7 @@ import (
 )
 
 func (p *ProviderCrypto) SignRegistercode(payload model.RegistercodePayload) (
-	RegistercodeRaw string,
+	RegistercodeRaw model.RegistercodeRawHex,
 	e error) {
 
 	payloadBytes, _ := json.Marshal(payload)
@@ -24,15 +24,16 @@ func (p *ProviderCrypto) SignRegistercode(payload model.RegistercodePayload) (
 	sigHex := hex.EncodeToString(sig)
 
 	slog.Info("Signed Registercode", "magicword", payload.Magicword, "before", payload.Before)
-	return payloadHex + "." + sigHex, nil
+	return model.RegistercodeRawHex(payloadHex + "." + sigHex), nil
 }
 
 // tranform regcode string to payload struct.
-func (p *ProviderCrypto) AnalyzeRegistercode(codeStr string) (*model.RegistercodePayload, error) {
+// notice that signature verifying is included here.
+func (p *ProviderCrypto) AnalyzeRegistercode(codeStr model.RegistercodeRawHex) (*model.RegistercodePayload, error) {
 	// decode registercode string to model.RegistercodePacket
 
 	// spilt
-	parts := strings.SplitN(codeStr, ".", 2)
+	parts := strings.SplitN(string(codeStr), ".", 2)
 	if len(parts) != 2 {
 		slog.Error("Invalid registercode format")
 		return nil, errs.BuildErrRegistercode(errs.RegistercodeFormat, http.StatusBadRequest)

@@ -2,7 +2,9 @@ package handler
 
 import (
 	"log/slog"
+	"net/http"
 
+	v1 "github.com/atomreforge/daizy-night-server/internal/api/v1/user"
 	"github.com/atomreforge/daizy-night-server/internal/consts"
 	mid "github.com/atomreforge/daizy-night-server/internal/middleware"
 	"github.com/atomreforge/daizy-night-server/internal/model"
@@ -20,9 +22,27 @@ func (h *HandlerComplex) HandleMe(ctx *echo.Context) error {
 		slog.Error("failed to assert claims to JwtAccessTokenPayload")
 		return echo.ErrUnauthorized
 	}
+	b, err := h.ServiceUser.GetInfoMineByUid(claims.Uid)
+	if err != nil {
+		return err
+	}
+
+	mid.RespondObj(ctx, http.StatusOK, v1.InfoMeResponse{InfoMe: *b})
+
+	return nil
+
+	/*token, err := echo.ContextGet[*jwt.Token](ctx, string(consts.ExprContextKeyJWT))
+	if err != nil {
+		return err
+	}
+	claims, ok := token.Claims.(*model.JwtAccessTokenPayload)
+	if !ok {
+		slog.Error("failed to assert claims to JwtAccessTokenPayload")
+		return echo.ErrUnauthorized
+	}
 	return mid.RespondObj(ctx, 200, map[string]any{
-		string(consts.ExprAtomid):   claims.AtomID,
+		string(consts.ExprUserID):   claims.Uid,
 		string(consts.ExprUsername): claims.Username,
 		string(consts.JsonExprRole): claims.Role,
-	})
+	})*/
 }

@@ -4,14 +4,19 @@ import (
 	"github.com/atomreforge/daizy-night-server/internal/model"
 )
 
-type InterfaceUserRepo interface {
+type InterfaceRepoUser interface {
 	CreateUser(b *model.User) error
 	GetUserByUsername(name string) (*model.User, error)
-	GetUserByAtomid(id uint) (*model.User, error)
+	GetUserByUid(uid uint) (*model.User, error)
 }
 
-type InterfaceTokenRepo interface {
-	SaveRefreshToken(atomid uint, rawToken string) error
-	GetRefreshToken(atomid uint, rawToken string) (bool, error)
-	RevokeUserTokens(atomid uint) error
+type InterfaceRepoToken interface {
+	SaveRefreshToken(uid uint, rawToken string) error
+	GetRefreshToken(uid uint, rawToken string) (bool, error)
+	RevokeUserTokens(uid uint) error
+}
+
+type InterfaceRepoRegistercode interface {
+	Record(registercodeRaw model.RegistercodeRawHex) error
+	Remove(registercodeRaw model.RegistercodeRawHex) error
 }
