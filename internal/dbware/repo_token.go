@@ -16,8 +16,8 @@ type RepoToken struct {
 	cfg *config.Config
 }
 
-func NewRepoToken(pDB abstract.InterfaceProviderDB) *RepoToken {
-	return &RepoToken{pDB: pDB}
+func NewRepoToken(pDB abstract.InterfaceProviderDB, cfg *config.Config) *RepoToken {
+	return &RepoToken{pDB: pDB, cfg: cfg}
 }
 
 func (r *RepoToken) SaveRefreshToken(uid uint, rawToken string) error {

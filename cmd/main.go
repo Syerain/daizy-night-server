@@ -82,7 +82,7 @@ func Run() {
 
 	// dbware repo
 	repoUser := dbware.NewRepoUser(pDB)
-	repoToken := dbware.NewRepoToken(pDB)
+	repoToken := dbware.NewRepoToken(pDB, cfg)
 	repoRegcode := dbware.NewRepoRegistercode(pDB)
 
 	// service provider
