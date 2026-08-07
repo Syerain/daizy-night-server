@@ -5,7 +5,7 @@ http:
   port: 4703
   address: "127.0.0.1"
   rateLimit:
-    enabled: false
+    enabled: true
     rate: 10
     burst: 30
     expiresIn: 3m
@@ -30,3 +30,4 @@ security:
   # the only supported time units are: h, m, s, ms, us, ns
   jwtAccessTokenExpireTime: 15m
   jwtRefreshTokenExpireTime: 168h
+  jwtRevokedTokensRetainTime: 72h

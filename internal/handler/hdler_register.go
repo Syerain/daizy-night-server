@@ -1,17 +1,13 @@
 package handler
 
 import (
-	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 
 	v1 "github.com/atomreforge/daizy-night-server/internal/api/v1"
 	"github.com/atomreforge/daizy-night-server/internal/consts"
-	"github.com/atomreforge/daizy-night-server/internal/errs"
 	mid "github.com/atomreforge/daizy-night-server/internal/middleware"
 	"github.com/atomreforge/daizy-night-server/internal/utils"
-	"gorm.io/gorm"
 
 	"github.com/labstack/echo/v5"
 )
@@ -19,49 +15,28 @@ import (
 func (h *HandlerComplex) HandleRegister(ctx *echo.Context) error {
 	// record flow chain (monotonically accumulating)
 	utils.AppendCallChain(ctx, string(consts.ModExprHandlerRegister))
-	utils.AppendCallChain(ctx, string(consts.ModExprServiceUser))
 
-	slog.Info("got register request")
 	req, err := Bind[v1.RegisterRequest](ctx)
-
-	// failed to build RegisterBody
 	if err != nil {
 		return err
 	}
+
+	utils.Layer(ctx).Info(fmt.Sprintf("%s; user::%s;", consts.ExprReqRegister, req.Username))
 
 	// failure during param validation
 	if err := ValidateRegisterParams(req.RegisterBody); err != nil {
 		return err
 	}
 
-	// disable registercode; havent verify sig here;
-	// bad regcode will be released in the error below.
-	if err = h.ServiceCode.RecordRegistercode(req.Registercode); err != nil {
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return errs.BuildErrRegistercode(errs.ValidationKeyDuplicatedValue, http.StatusBadRequest)
-		}
-		return err
-	}
-
 	// execute reg service
-	if err := h.ServiceUser.Register(req.RegisterBody); err != nil {
+	utils.AppendCallChain(ctx, string(consts.ModExprServiceUser))
+	user, err := h.ServiceUser.Register(req.RegisterBody)
+	if err != nil {
 		h.ServiceCode.RemoveRegistercode(req.Registercode)
 		return err
 	}
 
-	// process success
-	u, err := h.ServiceUser.RepoUser.GetUserByUsername(req.Username)
-
-	//corner case; wont appear.
-	if err != nil {
-		if err0 := h.ServiceCode.RemoveRegistercode(req.Registercode); err0 != nil {
-			// it doesnt matters; we dont throw it upward;
-			slog.Error(string(consts.ExprFailedRegistercodeWithdraw))
-		}
-		return err
-	}
-
-	slog.Info("succeeded register; user::" + req.Username + " uid::" + fmt.Sprint(u.ID))
+	utils.Layer(ctx).Info(fmt.Sprintf("successfully registered; user::%s, uid::%d", user.Username, user.ID))
 	return mid.Respond(ctx, http.StatusOK, string(consts.HttpExprOk))
 }
 

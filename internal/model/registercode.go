@@ -28,4 +28,6 @@ type RegistercodeSigRawHex string
 type RegistercodeRecord struct {
 	gorm.Model
 	RawHex RegistercodeRawHex `gorm:"uniqueIndex;not null;type:text"`
+	Used   bool               `gorm:"not null;default:false" json:"-"`
+	UserID uint               `gorm:"unique"`
 }

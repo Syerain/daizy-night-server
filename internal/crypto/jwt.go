@@ -79,9 +79,7 @@ func (p *ProviderCrypto) SignRefreshToken(payload model.JwtRefreshTokenPayload) 
 
 func (p *ProviderCrypto) VerifyAccessToken(tokenStr string) (*model.JwtAccessTokenPayload, error) {
 	var payload model.JwtAccessTokenPayload
-	token, err := jwt.ParseWithClaims(tokenStr, &payload, func(t *jwt.Token) (interface{}, error) {
-		return p.JwtAccessTokenDeckey, nil
-	})
+	token, err := jwt.ParseWithClaims(tokenStr, &payload, NewJWTKeyFunc(p.JwtAccessTokenDeckey))
 	if err != nil || !token.Valid {
 		return nil, err
 	}
@@ -90,9 +88,7 @@ func (p *ProviderCrypto) VerifyAccessToken(tokenStr string) (*model.JwtAccessTok
 
 func (p *ProviderCrypto) VerifyRefreshToken(tokenStr string) (*model.JwtRefreshTokenPayload, error) {
 	var payload model.JwtRefreshTokenPayload
-	token, err := jwt.ParseWithClaims(tokenStr, &payload, func(t *jwt.Token) (interface{}, error) {
-		return p.JwtRefreshTokenDeckey, nil
-	})
+	token, err := jwt.ParseWithClaims(tokenStr, &payload, NewJWTKeyFunc(p.JwtRefreshTokenDeckey))
 	if err != nil || !token.Valid {
 		return nil, err
 	}
@@ -112,7 +108,7 @@ func NewJWTKeyFunc(deckey ed25519.PublicKey) jwt.Keyfunc {
 		if t.Method != jwt.SigningMethodEdDSA {
 			return nil, errs.BuildErrValidation(
 				errs.ValidationCryptoUnexpectedSigningMethod,
-				http.StatusBadRequest,
+				http.StatusUnauthorized,
 				string(consts.ExprDeckey),
 				string(consts.ExprIndetermined),
 			)

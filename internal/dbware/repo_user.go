@@ -16,24 +16,24 @@ import (
 var _ abstract.InterfaceRepoUser = (*RepoUser)(nil)
 
 type RepoUser struct {
-	db *gorm.DB
+	pDB abstract.InterfaceProviderDB
 }
 
-func NewRepoUser(db *gorm.DB) *RepoUser {
-	return &RepoUser{db: db}
+func NewRepoUser(pDB abstract.InterfaceProviderDB) *RepoUser {
+	return &RepoUser{pDB: pDB}
 }
 
 func (r *RepoUser) CreateUser(b *model.User) error {
 	b.RegisterTime = time.Now()
 
-	return r.db.Transaction(func(tx *gorm.DB) error {
+	return r.pDB.DB().Transaction(func(tx *gorm.DB) error {
 		return tx.Create(b).Error
 	})
 }
 
 func (r *RepoUser) GetUserByUsername(name string) (*model.User, error) {
 	var user model.User
-	result := r.db.Where(&model.User{Username: name}).First(&user)
+	result := r.pDB.DB().Where(&model.User{Username: name}).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, errs.BuildErrDbRecord(errs.DbRecordUsernameNotFound, http.StatusBadRequest, string(consts.ExprUser))
@@ -45,7 +45,7 @@ func (r *RepoUser) GetUserByUsername(name string) (*model.User, error) {
 
 func (r *RepoUser) GetUserByUid(uid uint) (*model.User, error) {
 	var user model.User
-	result := r.db.Where("id = ?", uid).First(&user)
+	result := r.pDB.DB().Where("id = ?", uid).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, errs.BuildErrDbRecord(errs.DbRecordNotFound, http.StatusBadRequest, string(consts.ExprUser))

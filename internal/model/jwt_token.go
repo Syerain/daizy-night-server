@@ -11,7 +11,7 @@ import (
 
 type RefreshToken struct {
 	gorm.Model
-	Uid       uint   `gorm:"not null"`
+	Uid       uint   `gorm:"not null;index"`
 	TokenHash string `gorm:"unique; not null"`
 	RevokedAt *time.Time
 }

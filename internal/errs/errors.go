@@ -46,7 +46,7 @@ func (e *ErrUserLogin) Error() string {
 }
 func (e *ErrUserLogin) StatusCode() int { return e.Http }
 func (e *ErrUserLogin) Respond() string {
-	return fmt.Sprintf("failure in user login; user::%s; details::%s", e.User, e.Type.Say())
+	return fmt.Sprintf("failure in user login; details::%s", e.Type.Say())
 }
 
 // registercode

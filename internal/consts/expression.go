@@ -26,6 +26,11 @@ const (
 	ExprDeckey expression = "Crypto-PublicKey"
 )
 
+// db
+const (
+	ExprRegistercodeRecord expression = "Record-Registercode"
+)
+
 // http response text
 const (
 	HttpExprInternalServerError expression = "internal server error"
@@ -86,4 +91,12 @@ const (
 	ModExprMiddlwareRoleControl expression = "Middleware-RoleControl"
 
 	ModExprUtils expression = "utils"
+)
+
+// type of request
+const (
+	ExprReqRegister  expression = "Request-Register"
+	ExprReqLogin     expression = "Request-Login"
+	ExprReqInfoMine  expression = "Request-InfoMine"
+	ExprReqAdminSudo expression = "Request-AdminSudo"
 )

@@ -19,42 +19,49 @@ import (
 var _ abstract.InterfaceServiceUser = (*ServiceUser)(nil)
 
 type ServiceUser struct {
-	RepoUser  abstract.InterfaceRepoUser
-	RepoToken abstract.InterfaceRepoToken
-	Crypto    abstract.InterfaceCrypto
+	repoUser    abstract.InterfaceRepoUser
+	repoToken   abstract.InterfaceRepoToken
+	repoRegcode abstract.InterfaceRepoRegistercode
+	crypto      abstract.InterfaceCrypto
 }
 
-func NewServiceUser(repouser abstract.InterfaceRepoUser, repotoken abstract.InterfaceRepoToken, crypto abstract.InterfaceCrypto) *ServiceUser {
+func NewServiceUser(repoUser abstract.InterfaceRepoUser, repoToken abstract.InterfaceRepoToken, repoRegcode abstract.InterfaceRepoRegistercode, crypto abstract.InterfaceCrypto) *ServiceUser {
 	return &ServiceUser{
-		RepoUser:  repouser,
-		RepoToken: repotoken,
-		Crypto:    crypto,
+		repoUser:    repoUser,
+		repoToken:   repoToken,
+		repoRegcode: repoRegcode,
+		crypto:      crypto,
 	}
 }
 
-func (s *ServiceUser) Register(b model.RegisterBody) error {
+func (s *ServiceUser) Register(b model.RegisterBody) (*model.User, error) {
 	slog.Info("service processing register ...")
+
+	// repo record regcode
+	if err := s.repoRegcode.Record(b.Registercode); err != nil {
+		return nil, err
+	}
 
 	// salt psw
 	passwordHash, err := utils.HashCreate(b.Password)
 	if err != nil {
 		slog.Error(err.Error())
-		return err
+		return nil, err
 	}
 
 	//
 	switch b.Registerway {
 	case consts.RegisterLegacy:
-		payload, err := s.Crypto.AnalyzeRegistercode(b.Registercode)
+		payload, err := s.crypto.AnalyzeRegistercode(b.Registercode)
 		if err != nil {
-			return err
+			return nil, err
 		} //it can only be ErrRegistercode
 
-		if !s.Crypto.VerifyRegistercodePayload(*payload) {
-			return errs.BuildErrRegistercode(errs.RegistercodeUnusableOutdated, 400)
+		if !s.crypto.VerifyRegistercodePayload(*payload) {
+			return nil, errs.BuildErrRegistercode(errs.RegistercodeUnusableOutdated, 400)
 		}
 
-		err = s.RepoUser.CreateUser(&model.User{
+		err = s.repoUser.CreateUser(&model.User{
 			Username:     b.Username,
 			Nickname:     b.Nickname,
 			PasswordHash: passwordHash,
@@ -64,19 +71,31 @@ func (s *ServiceUser) Register(b model.RegisterBody) error {
 		if err != nil {
 			//slog.Error("failure during creating user;" + err.Error())
 			if errors.Is(err, gorm.ErrDuplicatedKey) {
-				return errs.BuildErrValidation(errs.ValidationKeyDuplicatedValue, 400, string(consts.ExprIndetermined), string(consts.ExprIndetermined))
+				return nil, errs.BuildErrValidation(errs.ValidationKeyDuplicatedValue, 400, string(consts.ExprIndetermined), string(consts.ExprIndetermined))
 			}
-			return err
+			return nil, err
 		}
 
 	case consts.RegisterGithub:
-		slog.Warn(string(consts.ExprUnsupportedFeature))
-		return nil
+		return nil, &errs.ErrSupport{
+			Type: errs.FeatureUnsupported,
+			Http: http.StatusInternalServerError,
+		}
 	default:
-		panic(string(consts.ExprUnreachableCase))
+		return nil, &errs.ErrUnknown{
+			Type: errs.Undefined,
+			Http: http.StatusInternalServerError,
+		}
 	}
 
-	return nil
+	user, err := s.repoUser.GetUserByUsername(b.Username)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.repoRegcode.Used(b.Registercode, true); err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
 func (s *ServiceUser) Login(b model.LoginBody) (success bool, accessToken string, refreshToken string, err error) {
@@ -84,9 +103,15 @@ func (s *ServiceUser) Login(b model.LoginBody) (success bool, accessToken string
 	case consts.LoginLegacy:
 		{
 			if b.Username != "" {
-				user, err := s.RepoUser.GetUserByUsername(b.Username)
+				user, err := s.repoUser.GetUserByUsername(b.Username)
 				// db error during GetUser
 				if err != nil {
+					errapp, ok := errs.Easx[*errs.ErrDbRecord](err)
+					if ok {
+						if errapp.Type == errs.DbRecordUsernameNotFound {
+							return false, "", "", errs.BuildErrUserLogin(errs.UserLoginParamsIncorrect, http.StatusBadRequest, string(consts.ExprIndetermined))
+						}
+					}
 					return false, "", "", err
 				}
 
@@ -95,7 +120,7 @@ func (s *ServiceUser) Login(b model.LoginBody) (success bool, accessToken string
 					return false, "", "", err
 				}
 				if !matched {
-					return false, "", "", errs.BuildErrUserLogin(errs.UserLoginParamsPasswordIncorrect, http.StatusBadRequest, user.Username)
+					return false, "", "", errs.BuildErrUserLogin(errs.UserLoginParamsIncorrect, http.StatusBadRequest, user.Username)
 				}
 
 				payloadAccessToken := model.JwtAccessTokenPayload{
@@ -106,21 +131,22 @@ func (s *ServiceUser) Login(b model.LoginBody) (success bool, accessToken string
 				payloadRefreshToken := model.JwtRefreshTokenPayload{
 					Uid:      user.ID,
 					Username: user.Username,
+					Role:     user.Role,
 				}
 
-				accessToken, err := s.Crypto.SignAccessToken(payloadAccessToken)
+				accessToken, err := s.crypto.SignAccessToken(payloadAccessToken)
 				if err != nil {
 					slog.Error(err.Error())
 					return false, "", "", err
 				}
 
-				refreshToken, err := s.Crypto.SignRefreshToken(payloadRefreshToken)
+				refreshToken, err := s.crypto.SignRefreshToken(payloadRefreshToken)
 				if err != nil {
 					slog.Error(err.Error())
 					return false, "", "", err
 				}
 
-				if err := s.RepoToken.SaveRefreshToken(user.ID, refreshToken); err != nil {
+				if err := s.repoToken.SaveRefreshToken(user.ID, refreshToken); err != nil {
 					slog.Error(err.Error())
 					return false, "", "", err
 				}
@@ -142,26 +168,30 @@ func (s *ServiceUser) Login(b model.LoginBody) (success bool, accessToken string
 }
 
 func (s *ServiceUser) RefreshAccessToken(rawToken string) (success bool, accessToken string, refreshToken string, err error) {
-	payload, err := s.Crypto.VerifyRefreshToken(rawToken)
+	payload, err := s.crypto.VerifyRefreshToken(rawToken)
 	if err != nil {
 		return false, "", "", err
 	}
 
-	valid, err := s.RepoToken.GetRefreshToken(payload.Uid, rawToken)
-	if err != nil || !valid {
+	valid, err := s.repoToken.GetRefreshToken(payload.Uid, rawToken)
+	if err != nil {
 		return false, "", "", err
 	}
 
-	err = s.RepoToken.RevokeUserTokens(payload.Uid)
-	if err != nil {
+	if !valid {
+		return false, "", "", errs.BuildErrUserLogin(errs.UserLoginParamsIncorrect, http.StatusBadRequest, string(consts.ExprIndetermined))
+	}
+
+	if err = s.repoToken.RevokeUserTokens(payload.Uid); err != nil {
 		return false, "", "", err
 	}
 
 	payloadAccess := model.JwtAccessTokenPayload{
 		Uid:      payload.Uid,
 		Username: payload.Username,
+		Role:     payload.Role,
 	}
-	accessToken, err = s.Crypto.SignAccessToken(payloadAccess)
+	accessToken, err = s.crypto.SignAccessToken(payloadAccess)
 	if err != nil {
 		return false, "", "", err
 	}
@@ -169,13 +199,14 @@ func (s *ServiceUser) RefreshAccessToken(rawToken string) (success bool, accessT
 	payloadRefresh := model.JwtRefreshTokenPayload{
 		Uid:      payload.Uid,
 		Username: payload.Username,
+		Role:     payload.Role,
 	}
-	refreshToken, err = s.Crypto.SignRefreshToken(payloadRefresh)
+	refreshToken, err = s.crypto.SignRefreshToken(payloadRefresh)
 	if err != nil {
 		return false, "", "", err
 	}
 
-	err = s.RepoToken.SaveRefreshToken(payload.Uid, refreshToken)
+	err = s.repoToken.SaveRefreshToken(payload.Uid, refreshToken)
 	if err != nil {
 		return false, "", "", err
 	}
@@ -183,7 +214,7 @@ func (s *ServiceUser) RefreshAccessToken(rawToken string) (success bool, accessT
 }
 
 func (s *ServiceUser) GetInfoMineByUid(uid uint) (*model.InfoMe, error) {
-	user, err := s.RepoUser.GetUserByUid(uid)
+	user, err := s.repoUser.GetUserByUid(uid)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +226,23 @@ func (s *ServiceUser) GetInfoMineByUid(uid uint) (*model.InfoMe, error) {
 		Email:        user.Email,
 		RegisterTime: user.RegisterTime,
 		Role:         user.Role,
-		GitHubID:     user.GitHubID,
-		GitHubLogin:  user.GitHubLogin,
+		GithubID:     user.GithubID,
+		GithubLogin:  user.GithubLogin,
 	}, nil
+}
+
+func (s *ServiceUser) GetUserByUsername(name string) (*model.User, error) {
+	user, err := s.repoUser.GetUserByUsername(name)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (s *ServiceUser) GetUserByUid(uid uint) (*model.User, error) {
+	user, err := s.repoUser.GetUserByUid(uid)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }

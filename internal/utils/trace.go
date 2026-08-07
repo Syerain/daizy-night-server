@@ -32,7 +32,6 @@ func AppendCallChain(ctx *echo.Context, step string) {
 	ctx.Set(string(consts.JsonExprCallChain), stack)
 }
 
-
 // summon random traceid
 func NewTraceID() string {
 	i := make([]byte, 8)

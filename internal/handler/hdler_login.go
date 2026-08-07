@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"log/slog"
+	"fmt"
 	"net/http"
 
 	v1 "github.com/atomreforge/daizy-night-server/internal/api/v1"
@@ -14,25 +14,25 @@ import (
 func (h *HandlerComplex) HandleLogin(ctx *echo.Context) error {
 	// record flow chain (monotonically accumulating)
 	utils.AppendCallChain(ctx, string(consts.ModExprHandlerLogin))
-	utils.AppendCallChain(ctx, string(consts.ModExprServiceUser))
 
 	req, err := Bind[v1.LoginRequest](ctx)
 	if err != nil {
 		return err
 	}
 
-	slog.Info("got login request; username:" + req.Username)
+	utils.Layer(ctx).Info(fmt.Sprintf("%s; user::%s", consts.ExprReqLogin, req.Username))
 
 	if err := ValidateLoginParams(&req.LoginBody); err != nil {
 		return err
 	}
 
 	ok, accessToken, refreshToken, err := h.ServiceUser.Login(req.LoginBody)
+	utils.AppendCallChain(ctx, string(consts.ModExprServiceUser)) // call chain
 	if !ok {
 		return err
 	}
 
-	slog.Info("successfully logged in user::" + req.Username)
+	utils.Layer(ctx).Info(fmt.Sprintf("successfully logger in user::%s", req.Username))
 	return mid.RespondObj(ctx, http.StatusOK, v1.LoginResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,

@@ -3,6 +3,7 @@ package dbware
 import (
 	"log/slog"
 
+	abstract "github.com/atomreforge/daizy-night-server/internal/abstract/interface"
 	"github.com/atomreforge/daizy-night-server/internal/model"
 
 	"gorm.io/driver/sqlite"
@@ -10,11 +11,13 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+var _ abstract.InterfaceProviderDB = (*ProviderDB)(nil)
+
 type ProviderDB struct {
 	db *gorm.DB
 }
 
-func NewDBProvider(ctx struct {
+func NewProviderDB(ctx struct {
 	IsDebugMode bool
 	DSN         string
 }) (*ProviderDB, error) {

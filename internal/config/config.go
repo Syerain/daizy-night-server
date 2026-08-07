@@ -24,7 +24,7 @@ type Config struct {
 
 	Database struct {
 		IsDebugMode bool   `mapstructure:"isDebugMode" default:"false"`
-		DSN         string `mapstructure:"DSN" validate:"required"`
+		DSN         string `mapstructure:"DSN" validate:"required" default:"./data.db"`
 	} `mapstructure:"database"`
 
 	Log struct {
@@ -43,8 +43,13 @@ type Config struct {
 		JwtRefreshTokenEnckey string `mapstructure:"jwtRefreshTokenEnckey" validate:"required"`
 		JwtRefreshTokenDeckey string `mapstructure:"jwtRefreshTokenDeckey" validate:"required"`
 
-		// use format like 1m30s and viper can read it
-		JwtAccessTokenExpireTime  time.Duration `mapstructure:"jwtAccessTokenExpireTime" validate:"required"`
-		JwtRefreshTokenExpireTime time.Duration `mapstructure:"jwtRefreshTokenExpireTime" validate:"required"`
+		// use format like 1m30s and confx can read it
+		JwtAccessTokenExpireTime time.Duration `mapstructure:"jwtAccessTokenExpireTime" validate:"required" default:"15m"`
+
+		// use format like 1m30s and confx can read it
+		JwtRefreshTokenExpireTime time.Duration `mapstructure:"jwtRefreshTokenExpireTime" validate:"required" default:"168h"`
+
+		// revoked tokens will be cleared after then
+		JwtRevokedTokensRetainTime time.Duration `mapstructure:"jwtRevokedTokensRetainTime" validate:"required" default:"72h"`
 	} `mapstructure:"security"`
 }

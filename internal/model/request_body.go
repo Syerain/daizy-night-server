@@ -32,6 +32,6 @@ type InfoMe struct {
 
 	Role consts.Role `json:"role"`
 
-	GitHubID    *int64 `json:"github_id"`
-	GitHubLogin string `json:"github_login"`
+	GithubID    *int64  `json:"github_id"`
+	GithubLogin *string `json:"github_login"`
 }

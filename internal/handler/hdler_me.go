@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"log/slog"
+	"fmt"
 	"net/http"
 
 	v1 "github.com/atomreforge/daizy-night-server/internal/api/v1/user"
@@ -16,7 +16,7 @@ import (
 func (h *HandlerComplex) HandleMe(ctx *echo.Context) error {
 	// record flow chain (monotonically accumulating)
 	utils.AppendCallChain(ctx, string(consts.ModExprHandlerMe))
-	utils.AppendCallChain(ctx, string(consts.ModExprServiceUser))
+	utils.Layer(ctx).Info(fmt.Sprintf("%s", consts.ExprReqInfoMine))
 
 	token, err := echo.ContextGet[*jwt.Token](ctx, string(consts.ExprContextKeyJWT))
 	if err != nil {
@@ -24,10 +24,12 @@ func (h *HandlerComplex) HandleMe(ctx *echo.Context) error {
 	}
 	claims, ok := token.Claims.(*model.JwtAccessTokenPayload)
 	if !ok {
-		slog.Error("failed to assert claims to JwtAccessTokenPayload")
+		utils.Layer(ctx).Error("failed to assert claims to JwtAccessTokenPayload")
 		return echo.ErrUnauthorized
 	}
+
 	b, err := h.ServiceUser.GetInfoMineByUid(claims.Uid)
+	utils.AppendCallChain(ctx, string(consts.ModExprServiceUser))
 	if err != nil {
 		return err
 	}

@@ -25,21 +25,23 @@ import (
 	"github.com/labstack/echo/v5/middleware"
 )
 
+// entrance
 func main() {
 	Run()
 }
 
-type App struct {
+type Server struct {
 	echo *echo.Echo
 	cfg  *config.Config
 	db   *dbware.ProviderDB
 }
 
-func NewApp(cfg *config.Config, dbProvider *dbware.ProviderDB) *App {
+// havent use
+func NewServer(cfg *config.Config, dbProvider *dbware.ProviderDB) *Server {
 	// logger
 	utils.InitModuleLogger(cfg.Main.IsDebugMode, "main")
 
-	return &App{
+	return &Server{
 		echo: echo.New(),
 		cfg:  cfg,
 		db:   dbProvider,
@@ -47,9 +49,11 @@ func NewApp(cfg *config.Config, dbProvider *dbware.ProviderDB) *App {
 }
 
 func Run() {
-	// init
+	// start
 	slog.Info("Server starting...")
 	slog.Info("Reading config...")
+
+	// config
 	cfg := config.MustLoadConfig()
 	utils.InitModuleLogger(cfg.Main.IsDebugMode, "main")
 	slog.Info("Debug Mode:", slog.Bool("enabled", cfg.Main.IsDebugMode))
@@ -63,7 +67,7 @@ func Run() {
 	}
 
 	// database provider
-	db, err := dbware.NewDBProvider(struct {
+	pDB, err := dbware.NewProviderDB(struct {
 		IsDebugMode bool
 		DSN         string
 	}{
@@ -74,15 +78,15 @@ func Run() {
 		slog.Error("FATAL: couldnt init db !")
 		os.Exit(1)
 	}
-	defer db.Close()
+	defer pDB.Close()
 
-	// repo
-	repoUser := dbware.NewRepoUser(db.DB())
-	repoToken := dbware.NewRepoToken(db.DB())
-	repoRegcode := dbware.NewRepoRegistercode(db.DB())
+	// dbware repo
+	repoUser := dbware.NewRepoUser(pDB)
+	repoToken := dbware.NewRepoToken(pDB)
+	repoRegcode := dbware.NewRepoRegistercode(pDB)
 
 	// service provider
-	svcUser := service.NewServiceUser(repoUser, repoToken, pCrypto)
+	svcUser := service.NewServiceUser(repoUser, repoToken, repoRegcode, pCrypto)
 	svcCode := service.NewServiceCode(repoRegcode)
 	svcAdmin := service.NewServiceAdmin()
 
@@ -93,43 +97,57 @@ func Run() {
 		ServiceAdmin: svcAdmin,
 	}
 
-	// Echo
+	// Echo router
 	e := router.New(handler, pCrypto, cfg)
+	// set Echo logger
 	e.Logger = utils.GetLogger()
+	// error handler
 	e.HTTPErrorHandler = func(ctx *echo.Context, err error) {
+		// return if committed
 		if resp, uErr := echo.UnwrapResponse(ctx.Response()); uErr == nil {
 			if resp.Committed {
 				return
 			}
 		}
 
-		utils.Layer(ctx).Error("request failure",
+		// logger layer;
+		utils.Layer(ctx).Error(formatLine(
+			utils.GetCallChain(ctx),
+			ctx.Request().Method,
+			ctx.Request().URL.Path,
+			err,
+		))
+		/*utils.Layer(ctx).Error("request failure",
 			slog.String("callchain", fmt.Sprint(utils.GetCallChain(ctx))),
 			slog.String("method", ctx.Request().Method),
 			slog.String("path", ctx.Request().URL.Path),
 			slog.String("errtype", fmt.Sprintf("%T", err)),
 			slog.Any("details", err.Error()),
-		)
+		)*/
 
+		// custom errors implements func Respond() and mid.RespondCustom() calls it to echo User-Friendly msg.
 		if errapp, ok := errs.Easx[abstract.InterfaceAppError](err); ok {
 			mid.RespondCustom(ctx, errapp)
 			return
 		}
 
+		// http status code
 		var sc echo.HTTPStatusCoder
-		// set defult status code to IDE as a fallback
-		stat := http.StatusInternalServerError
+		stat := http.StatusInternalServerError // set defult status code to IDE as a fallback
 		if errors.As(err, &sc) {
 			if tmp := sc.StatusCode(); tmp != 0 {
 				stat = tmp
 			}
 		}
 
+		// final response
 		mid.Respond(ctx, stat, string(consts.HttpExprInternalServerError))
 	}
 
+	// using Echo default Recover()
 	e.Use(middleware.Recover())
 
+	// run http server
 	addrport := net.JoinHostPort(cfg.Http.Address, fmt.Sprintf("%d", cfg.Http.Port))
 	slog.Info("Listening on " + addrport)
 	if err := e.Start(addrport); err != nil {
@@ -138,89 +156,15 @@ func Run() {
 	}
 }
 
-/*
-func Run() {
-	// init
-	slog.Info("Server starting...")
-	slog.Info("Reading config...")
-	cfg := config.MustLoadConfig()
-	utils.InitModuleLogger(cfg.Main.IsDebugMode, "main")
-	slog.Info("Debug Mode:", slog.Bool("enabled", cfg.Main.IsDebugMode))
-	slog.Info("Configured listening at", "address", cfg.Http.Address, "port", cfg.Http.Port)
-
-	// crypto provider
-	pCrypto, err := crypto.NewProviderCrypto(cfg)
-	if err != nil {
-		slog.Error("FATAL: couldnt init crypto !")
-		os.Exit(1)
-	}
-
-	// database provider
-	db, err := dbware.NewDBProvider(struct {
-		IsDebugMode bool
-		DSN         string
-	}{
-		IsDebugMode: cfg.Main.IsDebugMode,
-		DSN:         cfg.Database.DSN,
-	})
-	if err != nil {
-		slog.Error("FATAL: couldnt init db !")
-		os.Exit(1)
-	}
-	defer db.Close()
-
-	// repo
-	repoUser := dbware.NewRepoUser(db.DB())
-	repoToken := dbware.NewRepoToken(db.DB())
-	repoRegcode := dbware.NewRepoRegistercode(db.DB())
-
-	// service provider
-	svcUser := service.NewServiceUser(repoUser, repoToken, pCrypto)
-	svcCode := service.NewServiceCode(repoRegcode)
-
-	// handler
-	handler := &handler.HandlerComplex{
-		ServiceUser: svcUser,
-		ServiceCode: svcCode,
-	}
-
-	// Echo
-	e := router.New(handler, pCrypto, cfg)
-	e.Logger = utils.GetLogger()
-	e.HTTPErrorHandler = func(ctx *echo.Context, err error) {
-		if resp, uErr := echo.UnwrapResponse(ctx.Response()); uErr == nil {
-			if resp.Committed {
-				return
-			}
-		}
-		// set default to ISE
-		code := http.StatusInternalServerError
-		var sc echo.HTTPStatusCoder
-		if errors.As(err, &sc) {
-			if tmp := sc.StatusCode(); tmp != 0 {
-				code = tmp //http status code; not biz code
-				//slog.Error(err.Error())
-				errapp, ok := errs.Easx[abstract.InterfaceAppError](err)
-				if ok {
-					slog.Error(errapp.Error())
-					mid.RespondCustom(ctx, errapp)
-				} else {
-					slog.Error(err.Error())
-					mid.Respond(ctx, code, string(consts.ExprHttpInternalServerError))
-				}
-			} else {
-				slog.Error(err.Error())
-				mid.Respond(ctx, http.StatusInternalServerError, string(consts.ExprHttpInternalServerError))
-			}
-		}
-	}
-
-	e.Use(middleware.Recover())
-
-	addrport := net.JoinHostPort(cfg.Http.Address, fmt.Sprintf("%d", cfg.Http.Port))
-	slog.Info("Listening on " + addrport)
-	if err := e.Start(addrport); err != nil {
-		slog.Error("FATAL: Failed to start HTTP server.")
-		os.Exit(1)
-	}
-}*/
+func formatLine(
+	chain []string,
+	method string,
+	path string,
+	err error,
+) string {
+	l := fmt.Sprintf(
+		"Failure-Request\tcallchain::%s\tmethod::%s\tpath::%s\tdetails::%s",
+		fmt.Sprint(chain), method, path, fmt.Sprintf("%T", err),
+	)
+	return l
+}

@@ -24,6 +24,6 @@ type User struct {
 	Role consts.Role `gorm:"not null;default:'user'"`
 
 	// Github OAuth:
-	GitHubID    *int64 `gorm:"unique"`
-	GitHubLogin string `gorm:"unique"` // github login username for presentation
+	GithubID    *int64  `gorm:"unique"`
+	GithubLogin *string `gorm:"unique"` // github login username for presentation
 }
