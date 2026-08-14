@@ -27,43 +27,41 @@ import (
 
 // entrance
 func main() {
-	Run()
-}
+	cfg := config.MustLoadConfig()
 
-type Server struct {
-	echo *echo.Echo
-	cfg  *config.Config
-	db   *dbware.ProviderDB
-}
+	srv, err := New(cfg)
+	if err != nil {
+		slog.Error("FATAL: failed to init server", slog.Any("error", err))
+		os.Exit(1)
+	}
 
-// havent use
-func NewServer(cfg *config.Config, dbProvider *dbware.ProviderDB) *Server {
-	// logger
-	utils.InitModuleLogger(cfg.Main.IsDebugMode, "main")
-
-	return &Server{
-		echo: echo.New(),
-		cfg:  cfg,
-		db:   dbProvider,
+	if err := srv.Run(); err != nil {
+		slog.Error("FATAL: server exited with error", slog.Any("error", err))
+		os.Exit(1)
 	}
 }
 
-func Run() {
-	// start
-	slog.Info("Server starting...")
-	slog.Info("Reading config...")
+type Server struct {
+	e   *echo.Echo
+	cfg *config.Config
+	pDB abstract.InterfaceProviderDB
+}
+
+// New assembles every dependency (logger, crypto, database, repos, services,
+// handlers and the echo engine) and returns a fully-initialized server.
+// It never calls os.Exit: all failures are returned to the caller.
+func New(cfg *config.Config) (*Server, error) {
+	utils.InitModuleLogger(cfg.Main.IsDebugMode, "main")
+	slog.Info("Server init..")
 
 	// config
-	cfg := config.MustLoadConfig()
-	utils.InitModuleLogger(cfg.Main.IsDebugMode, "main")
 	slog.Info("Debug Mode:", slog.Bool("enabled", cfg.Main.IsDebugMode))
 	slog.Info("Configured listening at", "address", cfg.Http.Address, "port", cfg.Http.Port)
 
 	// crypto provider
 	pCrypto, err := crypto.NewProviderCrypto(cfg)
 	if err != nil {
-		slog.Error("FATAL: couldnt init crypto !")
-		os.Exit(1)
+		return nil, fmt.Errorf("init crypto: %w", err)
 	}
 
 	// database provider
@@ -75,10 +73,8 @@ func Run() {
 		DSN:         cfg.Database.DSN,
 	})
 	if err != nil {
-		slog.Error("FATAL: couldnt init db !")
-		os.Exit(1)
+		return nil, fmt.Errorf("init db: %w", err)
 	}
-	defer pDB.Close()
 
 	// dbware repo
 	repoUser := dbware.NewRepoUser(pDB)
@@ -91,14 +87,10 @@ func Run() {
 	svcAdmin := service.NewServiceAdmin()
 
 	// handler
-	handler := &handler.HandlerComplex{
-		ServiceUser:  svcUser,
-		ServiceCode:  svcCode,
-		ServiceAdmin: svcAdmin,
-	}
+	h := handler.NewHandlerComplex(svcUser, svcCode, svcAdmin)
 
 	// Echo router
-	e := router.New(handler, pCrypto, cfg)
+	e := router.New(h, pCrypto, cfg)
 	// set Echo logger
 	e.Logger = utils.GetLogger()
 	// error handler
@@ -147,13 +139,32 @@ func Run() {
 	// using Echo default Recover()
 	e.Use(middleware.Recover())
 
-	// run http server
-	addrport := net.JoinHostPort(cfg.Http.Address, fmt.Sprintf("%d", cfg.Http.Port))
+	return &Server{
+		e:   e,
+		cfg: cfg,
+		pDB: pDB,
+	}, nil
+}
+
+// Run starts the HTTP server and blocks until it is shut down. echo v5 handles
+// SIGINT/SIGTERM with a graceful shutdown internally, so a nil return means the
+// server stopped on purpose. The database is closed right before returning.
+func (s *Server) Run() error {
+	defer func() {
+		if err := s.pDB.Close(); err != nil {
+			slog.Warn("failed to close database", slog.Any("error", err))
+		}
+	}()
+
+	addrport := net.JoinHostPort(s.cfg.Http.Address, fmt.Sprintf("%d", s.cfg.Http.Port))
 	slog.Info("Listening on " + addrport)
-	if err := e.Start(addrport); err != nil {
-		slog.Error("FATAL: Failed to start HTTP server.")
-		os.Exit(1)
+
+	err := s.e.Start(addrport)
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return err
 	}
+	slog.Info("Server shut down gracefully")
+	return nil
 }
 
 func formatLine(
