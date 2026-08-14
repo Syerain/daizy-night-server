@@ -92,7 +92,7 @@ func (s *ServiceUser) Register(b model.RegisterBody) (*model.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := s.repoRegcode.Used(b.Registercode, true); err != nil {
+	if err := s.repoRegcode.Used(b.Registercode, true, user.ID); err != nil {
 		return nil, err
 	}
 	return user, nil

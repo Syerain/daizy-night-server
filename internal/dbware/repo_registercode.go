@@ -45,13 +45,16 @@ func (r *RepoRegistercode) Remove(rawHex model.RegistercodeRawHex) error {
 	})
 }
 
-func (r *RepoRegistercode) Used(rawHex model.RegistercodeRawHex, value bool) error {
+func (r *RepoRegistercode) Used(rawHex model.RegistercodeRawHex, value bool, userID uint) error {
 	rec, err := r.GetRecordByRegistercode(rawHex)
 	if err != nil {
 		return err
 	}
 	return r.pDB.DB().Transaction(func(tx *gorm.DB) error {
-		return tx.Model(&rec).UpdateColumn("used", value).Error
+		return tx.Model(&rec).Updates(map[string]any{
+			"used":    value,
+			"user_id": userID,
+		}).Error
 	})
 }
 
