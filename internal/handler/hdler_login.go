@@ -26,7 +26,7 @@ func (h *HandlerComplex) HandleLogin(ctx *echo.Context) error {
 		return err
 	}
 
-	ok, accessToken, refreshToken, err := h.ServiceUser.Login(req.LoginBody)
+	ok, accessToken, refreshToken, err := h.ServiceUser.Login(&req.LoginBody)
 	utils.AppendCallChain(ctx, string(consts.ModExprServiceUser)) // call chain
 	if !ok {
 		return err

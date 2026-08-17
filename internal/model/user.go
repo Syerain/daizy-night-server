@@ -10,7 +10,10 @@ import (
 
 type User struct {
 	gorm.Model
-	// notice that 'atomid' was replaced by 'gorm.ID' due to async problems
+	// notice that:
+	// 26.8 'User.Atomid' was replaced by 'gorm.ID' due to async problems
+	// 26.8.17 switched to 'User.UserID' from 'gorm.ID' now. the values are now generated randomly.
+	UserID    uint   `gorm:"unique;not null"`
 	Username  string `gorm:"unique;not null"`
 	Nickname  string `gorm:"not null"`
 	Email     string

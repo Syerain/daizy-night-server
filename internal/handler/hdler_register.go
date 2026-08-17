@@ -30,20 +30,12 @@ func (h *HandlerComplex) HandleRegister(ctx *echo.Context) error {
 
 	// execute reg service
 	utils.AppendCallChain(ctx, string(consts.ModExprServiceUser))
-	user, err := h.ServiceUser.Register(req.RegisterBody)
+	user, err := h.ServiceUser.Register(&req.RegisterBody)
 	if err != nil {
-		h.ServiceCode.RemoveRegistercode(req.Registercode)
+		//h.ServiceCode.RemoveRegistercode(req.Registercode)
 		return err
 	}
 
 	utils.Layer(ctx).Info(fmt.Sprintf("successfully registered; user::%s, uid::%d", user.Username, user.ID))
 	return mid.Respond(ctx, http.StatusOK, string(consts.HttpExprOk))
-}
-
-func Bind[T any](ctx *echo.Context) (*T, error) {
-	var b T
-	if err := ctx.Bind(&b); err != nil {
-		return nil, err
-	}
-	return &b, nil
 }

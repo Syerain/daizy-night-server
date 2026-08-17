@@ -1,7 +1,7 @@
 package service
 
 import (
-	"errors"
+	//"errors"
 	"log/slog"
 	"net/http"
 
@@ -12,8 +12,7 @@ import (
 	"github.com/atomreforge/daizy-night-server/internal/errs"
 	"github.com/atomreforge/daizy-night-server/internal/model"
 	"github.com/atomreforge/daizy-night-server/internal/utils"
-
-	"gorm.io/gorm"
+	//"gorm.io/gorm"
 )
 
 var _ abstract.InterfaceServiceUser = (*ServiceUser)(nil)
@@ -34,31 +33,36 @@ func NewServiceUser(repoUser abstract.InterfaceRepoUser, repoToken abstract.Inte
 	}
 }
 
-func (s *ServiceUser) Register(b model.RegisterBody) (*model.User, error) {
+func (s *ServiceUser) Register(b *model.RegisterBody) (*model.User, error) {
 	slog.Info("service processing register ...")
 
 	// repo record regcode
+	// keep all the contacted regcodes for review and maintenance.
 	if err := s.repoRegcode.Record(b.Registercode); err != nil {
 		return nil, err
 	}
 
-	// salt psw
-	passwordHash, err := utils.HashCreate(b.Password)
-	if err != nil {
-		slog.Error(err.Error())
-		return nil, err
-	}
-
-	//
+	// router
 	switch b.Registerway {
 	case consts.RegisterLegacy:
 		payload, err := s.crypto.AnalyzeRegistercode(b.Registercode)
 		if err != nil {
 			return nil, err
 		} //it can only be ErrRegistercode
+		if payload == nil {
+			return nil, errs.BuildErrRegistercode(errs.RegistercodeUnusableOutdated, http.StatusBadRequest)
+		}
 
+		// verify before hashing
 		if !s.crypto.VerifyRegistercodePayload(*payload) {
 			return nil, errs.BuildErrRegistercode(errs.RegistercodeUnusableOutdated, 400)
+		}
+
+		// salt psw after hashing; hashing is perf-expensive
+		passwordHash, err := utils.HashCreate(b.Password)
+		if err != nil {
+			slog.Error(err.Error())
+			return nil, err
 		}
 
 		err = s.repoUser.CreateUser(&model.User{
@@ -69,10 +73,6 @@ func (s *ServiceUser) Register(b model.RegisterBody) (*model.User, error) {
 		})
 
 		if err != nil {
-			//slog.Error("failure during creating user;" + err.Error())
-			if errors.Is(err, gorm.ErrDuplicatedKey) {
-				return nil, errs.BuildErrValidation(errs.ValidationKeyDuplicatedValue, 400, string(consts.ExprIndetermined), string(consts.ExprIndetermined))
-			}
 			return nil, err
 		}
 
@@ -88,17 +88,15 @@ func (s *ServiceUser) Register(b model.RegisterBody) (*model.User, error) {
 		}
 	}
 
+	// DO NOT REMOVE
 	user, err := s.repoUser.GetUserByUsername(b.Username)
 	if err != nil {
-		return nil, err
-	}
-	if err := s.repoRegcode.Used(b.Registercode, true, user.ID); err != nil {
 		return nil, err
 	}
 	return user, nil
 }
 
-func (s *ServiceUser) Login(b model.LoginBody) (success bool, accessToken string, refreshToken string, err error) {
+func (s *ServiceUser) Login(b *model.LoginBody) (success bool, accessToken string, refreshToken string, err error) {
 	switch b.Loginway {
 	case consts.LoginLegacy:
 		{
@@ -124,12 +122,12 @@ func (s *ServiceUser) Login(b model.LoginBody) (success bool, accessToken string
 				}
 
 				payloadAccessToken := model.JwtAccessTokenPayload{
-					Uid:      user.ID,
+					Uid:      user.UserID,
 					Username: user.Username,
 					Role:     user.Role,
 				}
 				payloadRefreshToken := model.JwtRefreshTokenPayload{
-					Uid:      user.ID,
+					Uid:      user.UserID,
 					Username: user.Username,
 					Role:     user.Role,
 				}
@@ -146,7 +144,7 @@ func (s *ServiceUser) Login(b model.LoginBody) (success bool, accessToken string
 					return false, "", "", err
 				}
 
-				if err := s.repoToken.SaveRefreshToken(user.ID, refreshToken); err != nil {
+				if err := s.repoToken.SaveRefreshToken(user.UserID, refreshToken); err != nil {
 					slog.Error(err.Error())
 					return false, "", "", err
 				}
@@ -218,9 +216,12 @@ func (s *ServiceUser) GetInfoMineByUid(uid uint) (*model.InfoMe, error) {
 	if err != nil {
 		return nil, err
 	}
+	if user == nil {
+		return nil, errs.BuildErrDbRecord(errs.DbRecordNotFound, http.StatusNotFound, string(consts.ExprUser))
+	}
 
 	return &model.InfoMe{
-		Uid:          user.ID,
+		Uid:          user.UserID,
 		Username:     user.Username,
 		Nickname:     user.Nickname,
 		Email:        user.Email,
@@ -236,6 +237,9 @@ func (s *ServiceUser) GetUserByUsername(name string) (*model.User, error) {
 	if err != nil {
 		return nil, err
 	}
+	if user == nil {
+		return nil, errs.BuildErrDbRecord(errs.Unknown, http.StatusInternalServerError, string(consts.ExprUser))
+	}
 	return user, nil
 }
 
@@ -243,6 +247,9 @@ func (s *ServiceUser) GetUserByUid(uid uint) (*model.User, error) {
 	user, err := s.repoUser.GetUserByUid(uid)
 	if err != nil {
 		return nil, err
+	}
+	if user == nil {
+		return nil, errs.BuildErrDbRecord(errs.Unknown, http.StatusInternalServerError, string(consts.ExprUser))
 	}
 	return user, nil
 }

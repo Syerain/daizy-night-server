@@ -27,10 +27,8 @@ func (r *RepoRegistercode) Record(rawHex model.RegistercodeRawHex) error {
 		err := tx.Create(&model.RegistercodeRecord{RawHex: rawHex}).Error
 		if err != nil {
 			if errors.Is(err, gorm.ErrDuplicatedKey) {
-				return &errs.ErrRegistercode{
-					Type: errs.RegistercodeUnusableUsed,
-					Http: http.StatusBadRequest,
-				}
+				// repoRegcode records all known or contacted regcodes.
+				return nil
 			}
 			return err
 		}

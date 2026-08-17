@@ -38,7 +38,7 @@ func (r *RepoToken) SaveRefreshToken(uid uint, rawToken string) error {
 
 func (r *RepoToken) GetRefreshToken(uid uint, rawToken string) (bool, error) {
 	var tokens []model.RefreshToken
-	result := r.pDB.DB().Where("id = ? AND revoked_at IS NULL", uid).Find(&tokens)
+	result := r.pDB.DB().Where("uid = ? AND revoked_at IS NULL", uid).Find(&tokens)
 	if result.Error != nil {
 		return false, result.Error
 	}
@@ -57,7 +57,7 @@ func (r *RepoToken) GetRefreshToken(uid uint, rawToken string) (bool, error) {
 func (r *RepoToken) RevokeUserTokens(uid uint) error {
 	now := time.Now()
 	return r.pDB.DB().Model(&model.RefreshToken{}).
-		Where("id = ? AND revoked_at IS NULL", uid).
+		Where("uid = ? AND revoked_at IS NULL", uid).
 		Update("revoked_at", now).Error
 }
 
