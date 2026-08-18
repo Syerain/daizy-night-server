@@ -24,16 +24,9 @@ func NewRepoUser(pDB abstract.InterfaceProviderDB) *RepoUser {
 	return &RepoUser{pDB: pDB}
 }
 
-/*func (r *RepoUser) CreateUser(b *model.User) error {
-	b.RegisterTime = time.Now()
-
-	return r.pDB.DB().Transaction(func(tx *gorm.DB) error {
-		return tx.Create(b).Error
-	})
-}*/
-
 func (r *RepoUser) CreateUser(b *model.User) error {
 	return r.pDB.DB().Transaction(func(tx *gorm.DB) error {
+		// generate attrs
 		uid, err := utils.GenUid()
 		if err != nil {
 			return err
@@ -41,12 +34,7 @@ func (r *RepoUser) CreateUser(b *model.User) error {
 		b.UserID = uid
 		b.RegisterTime = time.Now()
 
-		/*latestID, err := r.GetLatestUid()
-		if err != nil {
-			return errs.BuildErrDbRecord(errs.Unknown, http.StatusInternalServerError, string(consts.ExprUserID))
-		}
-		b.UserID = latestID + 1*/
-
+		// create user
 		if err := tx.Create(b).Error; err != nil {
 			if errors.Is(err, gorm.ErrDuplicatedKey) {
 				return errs.BuildErrValidation(errs.ValidationKeyDuplicatedValue, http.StatusBadRequest, string(consts.ExprUsername), b.Username)
@@ -54,17 +42,18 @@ func (r *RepoUser) CreateUser(b *model.User) error {
 			return err
 		}
 
-		err = tx.Create(&model.RegistercodeRecord{
+		/*err = tx.Create(&model.RegistercodeRecord{
 			RawHex: b.Registercode,
 			Used:   true,
 			UserID: &b.UserID,
 		}).Error
+
 		if err == nil {
 			return nil
 		}
 		if !errors.Is(err, gorm.ErrDuplicatedKey) {
 			return err
-		}
+		}*/
 
 		res := tx.Model(&model.RegistercodeRecord{}).
 			Where("raw_hex = ? AND used = ?", string(b.Registercode), false).

@@ -29,5 +29,8 @@ type RegistercodeRecord struct {
 	gorm.Model
 	RawHex RegistercodeRawHex `gorm:"uniqueIndex;not null;type:text"`
 	Used   bool               `gorm:"not null;default:false" json:"-"`
-	UserID *uint              `gorm:"uniqueIndex"`
+
+	// it's optional to indicate a user for it
+	// cuz all the contacted regcodes will be recorded.
+	UserID *uint `gorm:"uniqueIndex"`
 }

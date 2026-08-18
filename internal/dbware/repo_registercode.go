@@ -22,7 +22,7 @@ func NewRepoRegistercode(pDB abstract.InterfaceProviderDB) *RepoRegistercode {
 	return &RepoRegistercode{pDB: pDB}
 }
 
-func (r *RepoRegistercode) Record(rawHex model.RegistercodeRawHex) error {
+/*func (r *RepoRegistercode) Record(rawHex model.RegistercodeRawHex) error {
 	return r.pDB.DB().Transaction(func(tx *gorm.DB) error {
 		err := tx.Create(&model.RegistercodeRecord{RawHex: rawHex}).Error
 		if err != nil {
@@ -31,6 +31,18 @@ func (r *RepoRegistercode) Record(rawHex model.RegistercodeRawHex) error {
 				return nil
 			}
 			return err
+		}
+		return nil
+	})
+}*/
+
+func (r *RepoRegistercode) RecordNewRegistercode(b *model.RegistercodeRecord) error {
+	return r.pDB.DB().Transaction(func(tx *gorm.DB) error {
+		if tx.Create(b).Error != nil {
+			if errors.Is(tx.Error, gorm.ErrDuplicatedKey) {
+				return nil
+			}
+			return tx.Error
 		}
 		return nil
 	})

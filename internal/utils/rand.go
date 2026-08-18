@@ -2,13 +2,14 @@ package utils
 
 import (
 	"crypto/rand"
-	"encoding/binary"
+	"math/big"
 )
 
+// GenUid returns a random 7-digit decimal id, range [1000000, 9999999].
 func GenUid() (uint, error) {
-	var b [8]byte
-	if _, err := rand.Read(b[:]); err != nil {
+	n, err := rand.Int(rand.Reader, big.NewInt(9000000)) // [0, 9000000)
+	if err != nil {
 		return 0, err
 	}
-	return uint(binary.BigEndian.Uint64(b[:])), nil
+	return uint(n.Int64()) + 1000000, nil
 }

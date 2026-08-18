@@ -31,7 +31,7 @@ func (e *ErrValidation) Error() string {
 }
 func (e *ErrValidation) StatusCode() int { return e.Http }
 func (e *ErrValidation) Respond() string {
-	return fmt.Sprintf("failure in params validation; field::%s;", e.Field)
+	return fmt.Sprintf("failure in params validation; field::%s; details::%s", e.Field, e.Type.Say())
 }
 
 // user login

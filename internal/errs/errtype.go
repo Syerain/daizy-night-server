@@ -63,6 +63,8 @@ func (t *errType) Say() string {
 		return "invalid length"
 	case ValidationKeyInvalidChar:
 		return "must contains digits and english letters only"
+	case ValidationKeyDuplicatedValue:
+		return "duplicated value"
 
 	case RegistercodeFormat:
 		return "invalid registercode format"
@@ -102,5 +104,5 @@ func (t *errType) Say() string {
 	case ValidationKeyBadFormat:
 		return "key bad format"
 	}
-	return "undefined error type"
+	return "error description undefined"
 }

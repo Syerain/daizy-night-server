@@ -32,7 +32,8 @@ func NewProviderDB(ctx struct {
 
 	// create or connect db
 	db, err := gorm.Open(sqlite.Open(ctx.DSN), &gorm.Config{
-		Logger: gormLogger,
+		Logger:         gormLogger,
+		TranslateError: true,
 	})
 	if err != nil {
 		return nil, err

@@ -12,7 +12,7 @@ type InterfaceServiceUser interface {
 }
 
 type InterfaceServiceCode interface {
-	RecordRegistercode(registercodeRaw model.RegistercodeRawHex) error
+	RecordNewRegistercode(registercodeRecord *model.RegistercodeRecord) error
 	RemoveRegistercode(registercodeRaw model.RegistercodeRawHex) error
 }
 

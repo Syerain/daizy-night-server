@@ -16,8 +16,8 @@ type Config struct {
 		Address   string `mapstructure:"address" validate:"ip_addr" default:"127.0.0.1"`
 		RateLimit struct {
 			Enabled   bool          `mapstructure:"enabled" default:"true"`
-			Rate      float64       `mapstructure:"rate" validate:"gte=0" default:"10"`
-			Burst     int           `mapstructure:"burst" validate:"gte=0" default:"30"`
+			Rate      float64       `mapstructure:"rate" validate:"gte=0" default:"2"`
+			Burst     int           `mapstructure:"burst" validate:"gte=0" default:"7"`
 			ExpiresIn time.Duration `mapstructure:"expiresIn" default:"3m"`
 		} `mapstructure:"rateLimit"`
 	} `mapstructure:"http"`

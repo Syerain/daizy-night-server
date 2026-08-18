@@ -29,8 +29,10 @@ temp/
 # Go specific
 /vendor/
 
-# test env
+# mine
 config.test.yaml
 config.yaml
-/test/
+data.db
+/local
+/etc
 

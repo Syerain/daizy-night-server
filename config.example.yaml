@@ -6,13 +6,13 @@ http:
   address: "127.0.0.1"
   rateLimit:
     enabled: true
-    rate: 10
-    burst: 30
+    rate: 2
+    burst: 7
     expiresIn: 3m
   
 database:
   isDebugMode: false
-  DSN: "./test/data.db"
+  DSN: "./data.db"
 
 log:
   isColored: true

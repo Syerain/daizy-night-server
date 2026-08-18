@@ -82,12 +82,13 @@ func New(cfg *config.Config) (*Server, error) {
 	repoRegcode := dbware.NewRepoRegistercode(pDB)
 
 	// service provider
-	svcUser := service.NewServiceUser(repoUser, repoToken, repoRegcode, pCrypto)
-	svcCode := service.NewServiceCode(repoRegcode)
-	svcAdmin := service.NewServiceAdmin()
+	pSvcCode := service.NewServiceCode(repoRegcode)
+	pSvcUser := service.NewServiceUser(repoUser, repoToken, pSvcCode, pCrypto)
+	pSvcAdmin := service.NewServiceAdmin()
+	s := service.NewServiceComplex(pSvcUser, pSvcCode, pSvcAdmin)
 
 	// handler
-	h := handler.NewHandlerComplex(svcUser, svcCode, svcAdmin)
+	h := handler.NewHandlerComplex(s.ServiceUser, s.ServiceCode, s.ServiceAdmin)
 
 	// Echo router
 	e := router.New(h, pCrypto, cfg)
@@ -174,8 +175,8 @@ func formatLine(
 	err error,
 ) string {
 	l := fmt.Sprintf(
-		"Failure-Request\tcallchain::%s\tmethod::%s\tpath::%s\tdetails::%s",
-		fmt.Sprint(chain), method, path, fmt.Sprintf("%T", err),
+		"Failure-Request\tmethod::%s\terror::%s\tcallchain::%s\tpath::%s\tdetails::%s;",
+		fmt.Sprint(chain), method, fmt.Sprintf("%T", err), path, err.Error(),
 	)
 	return l
 }

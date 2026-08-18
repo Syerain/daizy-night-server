@@ -17,7 +17,8 @@ type InterfaceRepoToken interface {
 }
 
 type InterfaceRepoRegistercode interface {
-	Record(registercodeRaw model.RegistercodeRawHex) error
+	//Record(registercodeRaw model.RegistercodeRawHex) error
+	RecordNewRegistercode(b *model.RegistercodeRecord) error
 	Remove(registercodeRaw model.RegistercodeRawHex) error
 	Used(registercodRawHex model.RegistercodeRawHex, value bool, userID uint) error
 	Updates(record model.RegistercodeRecord) error

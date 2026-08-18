@@ -17,19 +17,28 @@ import (
 
 var _ abstract.InterfaceServiceUser = (*ServiceUser)(nil)
 
+// shall use Service to avoid direct operation on Repo if there is already a service to provide the needed functionality.
 type ServiceUser struct {
-	repoUser    abstract.InterfaceRepoUser
-	repoToken   abstract.InterfaceRepoToken
-	repoRegcode abstract.InterfaceRepoRegistercode
-	crypto      abstract.InterfaceCrypto
+	repoUser  abstract.InterfaceRepoUser
+	repoToken abstract.InterfaceRepoToken
+	//repoRegcode abstract.InterfaceRepoRegistercode
+	pSvcCode abstract.InterfaceServiceCode
+	crypto   abstract.InterfaceCrypto
 }
 
-func NewServiceUser(repoUser abstract.InterfaceRepoUser, repoToken abstract.InterfaceRepoToken, repoRegcode abstract.InterfaceRepoRegistercode, crypto abstract.InterfaceCrypto) *ServiceUser {
+func NewServiceUser(
+	repoUser abstract.InterfaceRepoUser,
+	repoToken abstract.InterfaceRepoToken,
+	//repoRegcode abstract.InterfaceRepoRegistercode,
+	pSvcCode abstract.InterfaceServiceCode,
+	crypto abstract.InterfaceCrypto,
+) *ServiceUser {
 	return &ServiceUser{
-		repoUser:    repoUser,
-		repoToken:   repoToken,
-		repoRegcode: repoRegcode,
-		crypto:      crypto,
+		repoUser:  repoUser,
+		repoToken: repoToken,
+		//repoRegcode: repoRegcode,
+		pSvcCode: pSvcCode,
+		crypto:   crypto,
 	}
 }
 
@@ -38,7 +47,10 @@ func (s *ServiceUser) Register(b *model.RegisterBody) (*model.User, error) {
 
 	// repo record regcode
 	// keep all the contacted regcodes for review and maintenance.
-	if err := s.repoRegcode.Record(b.Registercode); err != nil {
+	if err := s.pSvcCode.RecordNewRegistercode(&model.RegistercodeRecord{
+		RawHex: b.Registercode,
+		Used:   false,
+	}); err != nil {
 		return nil, err
 	}
 
