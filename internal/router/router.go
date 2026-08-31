@@ -24,12 +24,12 @@ func New(
 	// public routes
 	e.POST("/api/v1/register", h.HandleRegister)
 	e.POST("/api/v1/login", h.HandleLogin)
+	e.GET("/user/refresh-access-token", h.HandleRefreshAccessToken)
 
 	// endpoints that requires authen only
 	ptAuthOnly := e.Group("/api/v1")
 	ptAuthOnly.Use(mid.AuthenJWT(pCrypto))
 	ptAuthOnly.GET("/user/me", h.HandleMe)
-	ptAuthOnly.GET("/user/refresh-access-token", h.HandleRefreshAccessToken)
 
 	// admin only endpoints
 	ptAdmin := e.Group("/api/v1/admin")
