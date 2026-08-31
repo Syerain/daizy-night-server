@@ -66,3 +66,16 @@ func (r *RepoToken) PruneRevokedTokens(uid uint) error {
 	return r.pDB.DB().Where("uid = ? AND revoked_at IS NOT NULL AND revoked_at < ?", uid, cutoff).
 		Delete(&model.RefreshToken{}).Error
 }
+
+func (r *RepoToken) GetUidByRefreshToken(rawToken string) (uint, error) {
+	var token model.RefreshToken
+	hash, err := utils.HashCreate(rawToken)
+	if err != nil {
+		return 0, err
+	}
+	result := r.pDB.DB().Where("token_hash = ?", hash).First(&token)
+	if result.Error != nil {
+		return 0, result.Error
+	}
+	return token.Uid, nil
+}

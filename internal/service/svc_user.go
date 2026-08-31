@@ -265,3 +265,19 @@ func (s *ServiceUser) GetUserByUid(uid uint) (*model.User, error) {
 	}
 	return user, nil
 }
+
+func (s *ServiceUser) GetUidByRefreshToken(rawToken string) (uint, error) {
+	return s.repoToken.GetUidByRefreshToken(rawToken)
+}
+
+func (s *ServiceUser) GetUserByRefreshToken(rawToken string) (*model.User, error) {
+	uid, err := s.repoToken.GetUidByRefreshToken(rawToken)
+	if err != nil {
+		return nil, err
+	}
+	user, err := s.repoUser.GetUserByUid(uid)
+	if user == nil {
+		return nil, errs.BuildErrDbRecord(errs.Unknown, http.StatusBadRequest, string(consts.JsonExprRefreshToken))
+	}
+	return user, nil
+}

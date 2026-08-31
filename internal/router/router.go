@@ -29,6 +29,7 @@ func New(
 	ptAuthOnly := e.Group("/api/v1")
 	ptAuthOnly.Use(mid.AuthenJWT(pCrypto))
 	ptAuthOnly.GET("/user/me", h.HandleMe)
+	ptAuthOnly.GET("/user/refresh-access-token", h.HandleRefreshAccessToken)
 
 	// admin only endpoints
 	ptAdmin := e.Group("/api/v1/admin")

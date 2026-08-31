@@ -14,6 +14,7 @@ type InterfaceRepoToken interface {
 	SaveRefreshToken(uid uint, rawToken string) error
 	GetRefreshToken(uid uint, rawToken string) (bool, error)
 	RevokeUserTokens(uid uint) error
+	GetUidByRefreshToken(rawToken string) (uint, error)
 }
 
 type InterfaceRepoRegistercode interface {

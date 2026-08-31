@@ -78,6 +78,7 @@ const (
 	ModExprHandlerLogin    expression = "Handler-Login"
 	ModExprHandlerAdmin    expression = "Handler-Admin"
 	ModExprHandlerMe       expression = "Handler-Me"
+	ModExprHandlerRefresh  expression = "Handler-Refresh"
 
 	ModExprService      expression = "service"
 	ModExprServiceUser  expression = "Service-User"
