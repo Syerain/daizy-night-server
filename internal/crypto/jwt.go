@@ -2,6 +2,8 @@ package crypto
 
 import (
 	"crypto/ed25519"
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"net/http"
 
@@ -70,7 +72,23 @@ func (p *ProviderCrypto) SignAccessToken(payload model.JwtAccessTokenPayload) (s
 	return token.SignedString(p.JwtAccessTokenEnckey)
 }
 
+/*// replaced
 func (p *ProviderCrypto) SignRefreshToken(payload model.JwtRefreshTokenPayload) (string, error) {
+	payload.ExpiresAt = jwt.NewNumericDate(time.Now().Add(p.RefreshTokenExpireTime))
+	payload.IssuedAt = jwt.NewNumericDate(time.Now())
+	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, payload)
+	return token.SignedString(p.JwtRefreshTokenEnckey)
+}*/
+
+func (p *ProviderCrypto) SignRefreshToken(payload model.JwtRefreshTokenPayload) (string, error) {
+	// random jti: EdDSA is deterministic, so two tokens issued for the same
+	// user within the same second would otherwise be byte-identical and
+	// collide on the unique lookup_hash index
+	buf := make([]byte, 16)
+	if _, err := rand.Read(buf); err != nil {
+		return "", err
+	}
+	payload.ID = hex.EncodeToString(buf)
 	payload.ExpiresAt = jwt.NewNumericDate(time.Now().Add(p.RefreshTokenExpireTime))
 	payload.IssuedAt = jwt.NewNumericDate(time.Now())
 	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, payload)

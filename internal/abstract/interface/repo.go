@@ -12,8 +12,10 @@ type InterfaceRepoUser interface {
 
 type InterfaceRepoToken interface {
 	SaveRefreshToken(uid uint, rawToken string) error
-	GetRefreshToken(uid uint, rawToken string) (bool, error)
+	GetRefreshToken(uid uint, rawToken string) (*model.RefreshToken, error)
+	// notice that this func will revoke all tokens of a user
 	RevokeUserTokens(uid uint) error
+	RotateRefreshToken(uid uint, usedLookupHash, newRawToken string) error
 	GetUidByRefreshToken(rawToken string) (uint, error)
 }
 

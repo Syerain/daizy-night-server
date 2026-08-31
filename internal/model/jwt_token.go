@@ -11,9 +11,10 @@ import (
 
 type RefreshToken struct {
 	gorm.Model
-	Uid       uint   `gorm:"not null;index"`
-	TokenHash string `gorm:"unique; not null"`
-	RevokedAt *time.Time
+	Uid        uint   `gorm:"not null;index"`
+	TokenHash  string `gorm:"unique; not null"`
+	LookupHash string `gorm:"uniqueIndex; not null"`
+	RevokedAt  *time.Time
 }
 
 type JwtAccessTokenPayload struct {

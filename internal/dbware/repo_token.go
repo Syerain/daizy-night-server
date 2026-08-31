@@ -1,12 +1,17 @@
 package dbware
 
 import (
+	"errors"
+	"net/http"
 	"time"
 
 	abstract "github.com/atomreforge/daizy-night-server/internal/abstract/interface"
 	"github.com/atomreforge/daizy-night-server/internal/config"
+	"github.com/atomreforge/daizy-night-server/internal/consts"
+	"github.com/atomreforge/daizy-night-server/internal/errs"
 	"github.com/atomreforge/daizy-night-server/internal/model"
 	"github.com/atomreforge/daizy-night-server/internal/utils"
+	"gorm.io/gorm"
 )
 
 var _ abstract.InterfaceRepoToken = (*RepoToken)(nil)
@@ -31,27 +36,24 @@ func (r *RepoToken) SaveRefreshToken(uid uint, rawToken string) error {
 		return err
 	}
 	return r.pDB.DB().Create(&model.RefreshToken{
-		Uid:       uid,
-		TokenHash: hash,
+		Uid:        uid,
+		TokenHash:  hash,
+		LookupHash: utils.SHA256HashHex(rawToken),
 	}).Error
 }
 
-func (r *RepoToken) GetRefreshToken(uid uint, rawToken string) (bool, error) {
-	var tokens []model.RefreshToken
-	result := r.pDB.DB().Where("uid = ? AND revoked_at IS NULL", uid).Find(&tokens)
-	if result.Error != nil {
-		return false, result.Error
-	}
-	for _, t := range tokens {
-		matched, err := utils.HashVerify(rawToken, t.TokenHash)
-		if err != nil {
-			return false, err
+func (r *RepoToken) GetRefreshToken(uid uint, rawToken string) (*model.RefreshToken, error) {
+	var token model.RefreshToken
+	err := r.pDB.DB().
+		Where("uid = ? AND lookup_hash = ? AND revoked_at IS NULL", uid, utils.SHA256HashHex(rawToken)).
+		First(&token).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
 		}
-		if matched {
-			return true, nil
-		}
+		return nil, err
 	}
-	return false, nil
+	return &token, nil
 }
 
 func (r *RepoToken) RevokeUserTokens(uid uint) error {
@@ -67,15 +69,59 @@ func (r *RepoToken) PruneRevokedTokens(uid uint) error {
 		Delete(&model.RefreshToken{}).Error
 }
 
+func (r *RepoToken) RotateRefreshToken(uid uint, usedLookupHash string, newRawToken string) error {
+	newTokenHash, err := utils.HashCreate(newRawToken)
+	if err != nil {
+		return err
+	}
+	newLookupHash := utils.SHA256HashHex(newRawToken)
+
+	return r.pDB.DB().Transaction(func(tx *gorm.DB) error {
+		cutoff := time.Now().Add(-r.cfg.Security.JwtRevokedTokensRetainTime)
+		if err := tx.
+			Where("uid = ? AND revoked_at IS NOT NULL AND revoked_at < ?", uid, cutoff).
+			Delete(&model.RefreshToken{}).Error; err != nil {
+			return err
+		}
+
+		res := tx.Model(&model.RefreshToken{}).
+			Where("uid = ? AND lookup_hash = ? AND revoked_at IS NULL", uid, usedLookupHash).
+			Update("revoked_at", time.Now())
+		if res.Error != nil {
+			return res.Error
+		}
+		if res.RowsAffected == 0 {
+			return errs.BuildErrUserLogin(
+				errs.UserLoginParamsIncorrect,
+				http.StatusUnauthorized,
+				string(consts.ExprIndetermined),
+			)
+		}
+
+		return tx.Create(&model.RefreshToken{
+			Uid:        uid,
+			TokenHash:  newTokenHash,
+			LookupHash: newLookupHash,
+			RevokedAt:  nil,
+		}).Error
+	})
+}
+
 func (r *RepoToken) GetUidByRefreshToken(rawToken string) (uint, error) {
 	var token model.RefreshToken
-	hash, err := utils.HashCreate(rawToken)
-	if err != nil {
-		return 0, err
-	}
-	result := r.pDB.DB().Where("token_hash = ?", hash).First(&token)
-	if result.Error != nil {
-		return 0, result.Error
+	res := r.pDB.DB().
+		Where("lookup_hash = ? AND revoked_at IS NULL", utils.SHA256HashHex(rawToken)).
+		First(&token)
+	if res.Error != nil {
+		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+			return 0,
+				errs.BuildErrUserLogin(
+					errs.UserLoginParamsIncorrect,
+					http.StatusUnauthorized,
+					string(consts.ExprIndetermined),
+				)
+		}
+		return 0, res.Error
 	}
 	return token.Uid, nil
 }

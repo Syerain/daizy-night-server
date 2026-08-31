@@ -24,7 +24,7 @@ func New(
 	// public routes
 	e.POST("/api/v1/register", h.HandleRegister)
 	e.POST("/api/v1/login", h.HandleLogin)
-	e.GET("/user/refresh-access-token", h.HandleRefreshAccessToken)
+	e.POST("/api/v1/refresh-access-token", h.HandleRefreshAccessToken)
 
 	// endpoints that requires authen only
 	ptAuthOnly := e.Group("/api/v1")

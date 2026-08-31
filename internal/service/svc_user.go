@@ -177,25 +177,75 @@ func (s *ServiceUser) Login(b *model.LoginBody) (success bool, accessToken strin
 	return false, "", "", errs.BuildErrSupport(errs.FeatureUnsupported, http.StatusBadRequest)
 }
 
+/*
+//repalced
+
+	func (s *ServiceUser) RefreshAccessToken(rawToken string) (success bool, accessToken string, refreshToken string, err error) {
+		payload, err := s.crypto.VerifyRefreshToken(rawToken)
+		if err != nil {
+			return false, "", "", err
+		}
+
+		valid, err := s.repoToken.GetRefreshToken(payload.Uid, rawToken)
+		if err != nil {
+			return false, "", "", err
+		}
+
+		if !valid {
+			return false, "", "", errs.BuildErrUserLogin(errs.UserLoginParamsIncorrect, http.StatusBadRequest, string(consts.ExprIndetermined))
+		}
+
+		if err = s.repoToken.RevokeUserTokens(payload.Uid); err != nil {
+			return false, "", "", err
+		}
+
+		payloadAccess := model.JwtAccessTokenPayload{
+			Uid:      payload.Uid,
+			Username: payload.Username,
+			Role:     payload.Role,
+		}
+		accessToken, err = s.crypto.SignAccessToken(payloadAccess)
+		if err != nil {
+			return false, "", "", err
+		}
+
+		payloadRefresh := model.JwtRefreshTokenPayload{
+			Uid:      payload.Uid,
+			Username: payload.Username,
+			Role:     payload.Role,
+		}
+		refreshToken, err = s.crypto.SignRefreshToken(payloadRefresh)
+		if err != nil {
+			return false, "", "", err
+		}
+
+		err = s.repoToken.SaveRefreshToken(payload.Uid, refreshToken)
+		if err != nil {
+			return false, "", "", err
+		}
+		return true, accessToken, refreshToken, nil
+	}
+*/
 func (s *ServiceUser) RefreshAccessToken(rawToken string) (success bool, accessToken string, refreshToken string, err error) {
 	payload, err := s.crypto.VerifyRefreshToken(rawToken)
 	if err != nil {
 		return false, "", "", err
 	}
 
-	valid, err := s.repoToken.GetRefreshToken(payload.Uid, rawToken)
+	row, err := s.repoToken.GetRefreshToken(payload.Uid, rawToken)
 	if err != nil {
 		return false, "", "", err
 	}
-
-	if !valid {
-		return false, "", "", errs.BuildErrUserLogin(errs.UserLoginParamsIncorrect, http.StatusBadRequest, string(consts.ExprIndetermined))
+	if row == nil {
+		return false, "", "", errs.BuildErrUserLogin(
+			errs.UserLoginParamsIncorrect,
+			http.StatusUnauthorized,
+			string(consts.ExprIndetermined),
+		)
 	}
 
-	if err = s.repoToken.RevokeUserTokens(payload.Uid); err != nil {
-		return false, "", "", err
-	}
-
+	// pure computations before any DB write: a signing failure leaves
+	// the database untouched and the old token valid
 	payloadAccess := model.JwtAccessTokenPayload{
 		Uid:      payload.Uid,
 		Username: payload.Username,
@@ -216,8 +266,8 @@ func (s *ServiceUser) RefreshAccessToken(rawToken string) (success bool, accessT
 		return false, "", "", err
 	}
 
-	err = s.repoToken.SaveRefreshToken(payload.Uid, refreshToken)
-	if err != nil {
+	// atomic rotation: revoke the used token + save the new one
+	if err = s.repoToken.RotateRefreshToken(payload.Uid, row.LookupHash, refreshToken); err != nil {
 		return false, "", "", err
 	}
 	return true, accessToken, refreshToken, nil
@@ -271,13 +321,14 @@ func (s *ServiceUser) GetUidByRefreshToken(rawToken string) (uint, error) {
 }
 
 func (s *ServiceUser) GetUserByRefreshToken(rawToken string) (*model.User, error) {
+	if _, err := s.crypto.VerifyRefreshToken(rawToken); err != nil {
+		return nil, err
+	}
+
 	uid, err := s.repoToken.GetUidByRefreshToken(rawToken)
 	if err != nil {
 		return nil, err
 	}
-	user, err := s.repoUser.GetUserByUid(uid)
-	if user == nil {
-		return nil, errs.BuildErrDbRecord(errs.Unknown, http.StatusBadRequest, string(consts.JsonExprRefreshToken))
-	}
-	return user, nil
+
+	return s.repoUser.GetUserByUid(uid)
 }
