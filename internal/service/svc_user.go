@@ -275,6 +275,22 @@ func (s *ServiceUser) RefreshAccessToken(rawToken string) (success bool, accessT
 	return true, accessToken, refreshToken, nil
 }
 
+// Signout revokes the refresh token presented by the user — the credential
+// that identifies the current session until real session identifiers exist.
+// The uid arrives pre-filled by the handler from the JWT claims. Idempotent:
+// unknown, invalid or already-revoked tokens resolve to a successful no-op
+// so signout never fails from the client's perspective.
+func (s *ServiceUser) Signout(b *model.SignoutBody) (success bool, err error) {
+	if _, err = s.crypto.VerifyRefreshToken(b.RefreshToken); err != nil {
+		return true, nil
+	}
+	if err = s.repoToken.RevokeRefreshToken(b.Uid, b.RefreshToken); err != nil {
+		return false, err
+	}
+	slog.Info("successfully signed out", "uid", b.Uid)
+	return true, nil
+}
+
 func (s *ServiceUser) GetInfoMineByUid(uid uint) (*model.InfoMe, error) {
 	user, err := s.repoUser.GetUserByUid(uid)
 	if err != nil {

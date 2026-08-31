@@ -132,3 +132,19 @@ func ValidateFormatRegistercode(c model.RegistercodeRawHex) (bool, error) {
 	}
 	return true, nil
 }
+
+// ValidateSignoutParams checks the signout request. Until session identifiers
+// are issued, an unspecified session defaults to the current session, which is
+// only locatable through the presented refresh token — so it stays required,
+// and a populated session list (signout-by-session) is rejected as unsupported.
+func ValidateSignoutParams(b *model.SignoutBody) error {
+	if len(b.Session) > 0 {
+		return errs.BuildErrSupport(errs.FeatureUnsupported, http.StatusBadRequest)
+	}
+
+	if _, err := validateNonNull(b.RefreshToken); err != nil {
+		return errs.BuildErrValidation(errs.ValidationKeyNull, http.StatusBadRequest, string(consts.JsonExprRefreshToken), string(consts.ExprBlank))
+	}
+
+	return nil
+}

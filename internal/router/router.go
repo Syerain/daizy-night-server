@@ -30,6 +30,7 @@ func New(
 	ptAuthOnly := e.Group("/api/v1")
 	ptAuthOnly.Use(mid.AuthenJWT(pCrypto))
 	ptAuthOnly.GET("/user/me", h.HandleMe)
+	ptAuthOnly.POST("/user/signout", h.HandleSignout)
 
 	// admin only endpoints
 	ptAdmin := e.Group("/api/v1/admin")

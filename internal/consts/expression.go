@@ -79,6 +79,7 @@ const (
 	ModExprHandlerAdmin    expression = "Handler-Admin"
 	ModExprHandlerMe       expression = "Handler-Me"
 	ModExprHandlerRefresh  expression = "Handler-Refresh"
+	ModExprHandlerSignout  expression = "Handler-Signout"
 
 	ModExprService      expression = "service"
 	ModExprServiceUser  expression = "Service-User"
@@ -101,4 +102,5 @@ const (
 	ExprReqInfoMine  expression = "Request-InfoMine"
 	ExprReqAdminSudo expression = "Request-AdminSudo"
 	ExprReqRefresh   expression = "Request-Refresh"
+	ExprReqSignout   expression = "Request-Signout"
 )

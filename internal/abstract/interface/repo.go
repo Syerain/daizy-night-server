@@ -15,6 +15,8 @@ type InterfaceRepoToken interface {
 	GetRefreshToken(uid uint, rawToken string) (*model.RefreshToken, error)
 	// notice that this func will revoke all tokens of a user
 	RevokeUserTokens(uid uint) error
+	// revokes a single token; unknown/already-revoked tokens affect zero rows (idempotent)
+	RevokeRefreshToken(uid uint, rawToken string) error
 	RotateRefreshToken(uid uint, usedLookupHash, newRawToken string) error
 	GetUidByRefreshToken(rawToken string) (uint, error)
 }

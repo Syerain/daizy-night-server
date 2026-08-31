@@ -152,6 +152,39 @@
 - `401` access token 缺失、无效或过期
 - `404` token 有效但用户记录不存在
 
+### POST /api/v1/user/signout
+
+退出登录：吊销当前会话的 refresh token。需要认证。
+
+语义约定：
+
+- `session` 字段为未来会话标识符预留：`session` 未指明时，后端默认吊销"本会话"；当前尚无会话标识符，"本会话"由请求体中的 `refresh_token` 指称，因此该字段必填
+- 幂等：token 未知、无效（含伪造/过期）或已被吊销时同样返回 `200`，重复退出不会失败
+- 吊销后该 refresh token 立即无法再刷新（重放刷新得到 `401`）；已签发的 access token 存活至其自身过期（≤15m），期间无法吊销（无黑名单机制）
+- 单设备退出：不影响该用户其他设备的登录态
+
+请求头：`Authorization: Bearer <access_token>`
+
+请求体：
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `refresh_token` | string | 当前会话的 refresh token（"本会话"的指称，必填） |
+| `session` | string[] | 预留字段，当前必须省略或为空数组；非空返回 400 |
+
+```json
+{
+  "refresh_token": "eyJ...",
+  "session": []
+}
+```
+
+响应：
+
+- `200` `{"message": "ok"}`（含幂等重入）
+- `400` 请求体不是合法 JSON、`refresh_token` 缺失，或 `session` 非空（按会话退出暂未支持）
+- `401` access token 缺失、无效或过期
+
 ### POST /api/v1/admin/sudo
 
 管理端点，占位实现。需要认证，且要求 `admin` 角色。

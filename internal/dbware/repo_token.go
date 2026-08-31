@@ -63,6 +63,14 @@ func (r *RepoToken) RevokeUserTokens(uid uint) error {
 		Update("revoked_at", now).Error
 }
 
+// RevokeRefreshToken revokes a single refresh token of a user. Tokens that are
+// unknown or already revoked affect zero rows: signout stays idempotent.
+func (r *RepoToken) RevokeRefreshToken(uid uint, rawToken string) error {
+	return r.pDB.DB().Model(&model.RefreshToken{}).
+		Where("uid = ? AND lookup_hash = ? AND revoked_at IS NULL", uid, utils.SHA256HashHex(rawToken)).
+		Update("revoked_at", time.Now()).Error
+}
+
 func (r *RepoToken) PruneRevokedTokens(uid uint) error {
 	cutoff := time.Now().Add(-r.cfg.Security.JwtRevokedTokensRetainTime)
 	return r.pDB.DB().Where("uid = ? AND revoked_at IS NOT NULL AND revoked_at < ?", uid, cutoff).
