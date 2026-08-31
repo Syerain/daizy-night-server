@@ -117,8 +117,9 @@
 }
 ```
 
-- `401` refresh token 无效或已被吊销（含已使用 token 的重放）
-- `400` 缺少 `refresh_token` 字段
+- `401` refresh token 无法在库中找到或已被吊销（含已使用 token 的重放）
+- `400` 请求体不是合法 JSON
+- `500` `refresh_token` 字段缺失、token 过期或验签失败（非业务错误，统一回退 `internal server error`）
 
 轮换语义：
 
