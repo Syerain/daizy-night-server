@@ -3,21 +3,23 @@ set -e
 
 PORT=4703
 
-# 1. 检查端口占用，若有则清理
-if lsof -iTCP:$PORT -sTCP:LISTEN >/dev/null 2>&1; then
-	echo "端口 $PORT 被占用，正在清理..."
-	PID=$(lsof -tiTCP:$PORT -sTCP:LISTEN)
-	kill -9 $PID && echo "已终止进程 PID: $PID"
+# 1. 检查端口占用，若有则清理（netstat 兼容 Windows/Git Bash）
+if netstat -ano | grep -q ":$PORT .*LISTENING"; then
+	PID=$(netstat -ano | grep ":$PORT" | grep LISTENING | awk '{print $NF}' | head -n1)
+	echo "端口 $PORT 被占用，正在清理... PID=$PID"
+	taskkill //F //PID $PID >/dev/null 2>&1 || true
+	sleep 1
 else
 	echo "端口 $PORT 空闲"
 fi
 
-# 2. 删除测试数据库文件
-if [ -f ./data.db ]; then
-	rm -f ./data.db && echo "已清理 ./data.db"
-else
-	echo "./data.db 不存在，跳过清理"
-fi
+# 2. 删除测试数据库文件（进程退出后文件句柄释放有延迟，带重试）
+for i in 1 2 3; do
+	if [ -f ./data.db ]; then
+		rm -f ./data.db && echo "已清理 ./data.db" && break
+	fi
+	sleep 1
+done
 
 # 3. 启动 server
 echo "启动 server ..."
