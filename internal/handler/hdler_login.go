@@ -32,7 +32,7 @@ func (h *HandlerComplex) HandleLogin(ctx *echo.Context) error {
 		return err
 	}
 
-	utils.Layer(ctx).Info(fmt.Sprintf("successfully logger in user::%s", req.Username))
+	utils.Layer(ctx).Info(fmt.Sprintf("successfully logged in user::%s", req.Username))
 	return mid.RespondObj(ctx, http.StatusOK, v1.LoginResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,

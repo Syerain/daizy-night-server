@@ -9,6 +9,7 @@ type InterfaceServiceUser interface {
 	GetUserByUid(uid uint) (*model.User, error)
 	GetUserByUsername(name string) (*model.User, error)
 	GetInfoMineByUid(uid uint) (*model.InfoMe, error)
+	GetUidByRefreshToken(rawToken string) (uint, error)
 }
 
 type InterfaceServiceCode interface {

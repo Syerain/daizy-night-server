@@ -100,4 +100,5 @@ const (
 	ExprReqLogin     expression = "Request-Login"
 	ExprReqInfoMine  expression = "Request-InfoMine"
 	ExprReqAdminSudo expression = "Request-AdminSudo"
+	ExprReqRefresh   expression = "Request-Refresh"
 )

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 
 	v1 "github.com/atomreforge/daizy-night-server/internal/api/v1/user"
@@ -12,8 +13,19 @@ import (
 
 func (h *HandlerComplex) HandleRefreshAccessToken(ctx *echo.Context) error {
 	utils.AppendCallChain(ctx, string(consts.ModExprHandlerRefresh))
+	utils.Layer(ctx).Info("got::" + string(consts.ExprReqRefresh))
 
 	req, err := Bind[v1.RefrehAccessTokenRequest](ctx)
+	if err != nil {
+		return err
+	}
+
+	// lookup twice; wait for optimization
+	uid, err := h.ServiceUser.GetUidByRefreshToken(req.RefreshToken)
+	if err != nil {
+		return err
+	}
+	user, err := h.ServiceUser.GetUserByUid(uid)
 	if err != nil {
 		return err
 	}
@@ -22,7 +34,7 @@ func (h *HandlerComplex) HandleRefreshAccessToken(ctx *echo.Context) error {
 	if !ok || err != nil {
 		return err
 	}
-
+	defer utils.Layer(ctx).Info(fmt.Sprintf("successfully refreshed access token for user::%s", user.Username))
 	return mid.RespondObj(ctx, http.StatusOK, v1.RefreshAccessTokenResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
