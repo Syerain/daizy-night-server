@@ -1,6 +1,6 @@
 # Daizy Night
 
-[English](README.md) | [中文](README.zh-CN.md)
+[English](README.md) | [中文](/i18n/README.zh-CN.md)
 
 **Daizy Night** is the account and authentication backend service for the ATOM Reforge community.
 
@@ -153,9 +153,9 @@ Public. Exchanges credentials for a JWT pair.
 }
 ```
 
-### `GET /api/v1/user/me`
+### `GET /api/v1/user/{username}/me`
 
-Authenticated — requires `Authorization: Bearer <access_token>`. Returns the current user's info.
+Authenticated — requires `Authorization: Bearer <access_token>`. Returns the current user's info. The `{username}` path segment must match the authenticated identity (JWT claims), otherwise `403`.
 
 `200 OK`:
 

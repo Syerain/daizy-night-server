@@ -153,9 +153,9 @@ go run ./cmd/main.go
 }
 ```
 
-### `GET /api/v1/user/me`
+### `GET /api/v1/user/{username}/me`
 
-需认证 —— 请求头 `Authorization: Bearer <access_token>`。返回当前用户信息。
+需认证 —— 请求头 `Authorization: Bearer <access_token>`。返回当前用户信息。路径中的 `{username}` 必须与认证身份（JWT claims）一致，否则 `403`。
 
 `200 OK`：
 

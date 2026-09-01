@@ -48,7 +48,8 @@ func (h *HandlerComplex) HandleCalendarGet(ctx *echo.Context) error {
 		return err
 	}
 
-	out := v1.CalendarGetResponse{CalendarID: cal.CalendarID}
+	// always emit [] (never null) for an empty timetable
+	out := v1.CalendarGetResponse{CalendarID: cal.CalendarID, Records: []v1.CalendarItemResponse{}}
 	for _, it := range cal.Records {
 		out.Records = append(out.Records, v1.CalendarItemResponse{
 			Weekday:  it.Weekday,

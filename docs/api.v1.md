@@ -24,6 +24,14 @@
 按客户端 IP 全局限流，超限返回 429 `{"message": "too many requests"}`。
 默认：速率 2 req/s，突发 7，窗口 3m（`config.yaml` 的 `http.rateLimit`）。
 
+### 用户资源路由与属主校验
+
+用户级端点（`me`、`calendar`）统一采用 `/api/v1/user/{username}/...` 路径形态：
+
+- `{username}` 路径段仅用于**属主校验**：必须与 access token claims 中的 `username` 完全一致，否则返回 `403`
+- 数据定位所用的 `uid` 永远取自 JWT claims；请求体不携带（也不接受）任何用户标识字段
+- 通用错误码：`401` access token 缺失、无效或过期；`403` 属主校验失败（下文各端点列出的 `403` 均指此语义）
+
 ## 端点
 
 ### POST /api/v1/register
@@ -171,6 +179,8 @@
   ]
 }
 ```
+
+`records` 按 `weekday`、`start_min` 升序返回；课表存在但无课程条目时返回 `[]`（不会是 `null`）。
 
 - `401` access token 缺失、无效或过期
 - `403` 路径中的用户名与认证身份不一致
