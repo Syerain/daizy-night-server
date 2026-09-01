@@ -20,8 +20,9 @@ var _ abstract.InterfaceServiceUser = (*ServiceUser)(nil)
 
 // shall use Service to avoid direct operation on Repo if there is already a service to provide the needed functionality.
 type ServiceUser struct {
-	repoUser  abstract.InterfaceRepoUser
-	repoToken abstract.InterfaceRepoToken
+	repoUser     abstract.InterfaceRepoUser
+	repoToken    abstract.InterfaceRepoToken
+	repoCalendar abstract.InterfaceRepoCalendar
 	//repoRegcode abstract.InterfaceRepoRegistercode
 	pSvcCode abstract.InterfaceServiceCode
 	crypto   abstract.InterfaceCrypto
@@ -30,13 +31,15 @@ type ServiceUser struct {
 func NewServiceUser(
 	repoUser abstract.InterfaceRepoUser,
 	repoToken abstract.InterfaceRepoToken,
+	repoCalendar abstract.InterfaceRepoCalendar,
 	//repoRegcode abstract.InterfaceRepoRegistercode,
 	pSvcCode abstract.InterfaceServiceCode,
 	crypto abstract.InterfaceCrypto,
 ) *ServiceUser {
 	return &ServiceUser{
-		repoUser:  repoUser,
-		repoToken: repoToken,
+		repoUser:     repoUser,
+		repoToken:    repoToken,
+		repoCalendar: repoCalendar,
 		//repoRegcode: repoRegcode,
 		pSvcCode: pSvcCode,
 		crypto:   crypto,
@@ -349,4 +352,24 @@ func (s *ServiceUser) GetUserByRefreshToken(rawToken string) (*model.User, error
 	}
 
 	return s.repoUser.GetUserByUid(uid)
+}
+
+func (s *ServiceUser) AddCalendar(cal *model.Calendar) error {
+	return s.repoCalendar.RecordNewCalendar(cal)
+}
+
+func (s *ServiceUser) UpdateCalendar(cal *model.Calendar) error {
+	return s.repoCalendar.UpdateCalendar(cal)
+}
+
+func (s *ServiceUser) RemoveCalendarByModel(cal *model.Calendar) error {
+	return s.repoCalendar.RemoveCalendarByModel(cal)
+}
+
+func (s *ServiceUser) RemoveCalendarByUid(uid uint) error {
+	return s.repoCalendar.RemoveCalendarByUid(uid)
+}
+
+func (s *ServiceUser) GetCalendarByUid(uid uint) (*model.Calendar, error) {
+	return s.repoCalendar.GetCalendarByUid(uid)
 }

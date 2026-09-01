@@ -126,9 +126,9 @@
 - 每次成功刷新都会吊销被使用的这一枚 refresh token，并签发全新 token 对；客户端必须整体覆盖保存，旧 refresh token 立即失效
 - 吊销精确到单枚 token：多设备各自持有独立的 refresh token，一台设备刷新不影响其他设备的登录态
 
-### GET /api/v1/user/me
+### GET /api/v1/user/{username}/me
 
-获取当前认证用户的信息。需要认证。
+获取当前认证用户的信息。需要认证。路径中的 `{username}` 必须与认证身份（JWT claims）一致，否则 `403`。
 
 请求头：`Authorization: Bearer <access_token>`
 
@@ -150,7 +150,67 @@
 ```
 
 - `401` access token 缺失、无效或过期
+- `403` 路径中的用户名与认证身份不一致
 - `404` token 有效但用户记录不存在
+
+### GET /api/v1/user/{username}/calendar
+
+获取当前认证用户的课表（含全部课程条目，按 `weekday`、`start_min` 升序）。需要认证，属主校验同上。
+
+请求头：`Authorization: Bearer <access_token>`
+
+响应：
+
+- `200`
+
+```json
+{
+  "calendar_id": 7362514,
+  "records": [
+    { "weekday": 1, "start_min": 480, "end_min": 570, "title": "数学" }
+  ]
+}
+```
+
+- `401` access token 缺失、无效或过期
+- `403` 路径中的用户名与认证身份不一致
+- `404` 尚未创建课表
+
+### PUT /api/v1/user/{username}/calendar
+
+全量替换当前用户的课表；首次调用即创建，语义幂等。需要认证，属主校验同上。`uid` 永不出现在请求体中，始终取自 JWT claims。
+
+请求体（`records` 可为空数组，表示清空课表；上限 200 条）：
+
+```json
+{
+  "records": [
+    { "weekday": 1, "start_min": 480, "end_min": 570, "title": "数学" }
+  ]
+}
+```
+
+| 字段 | 约束 |
+| --- | --- |
+| `records[].weekday` | 整数 `0`–`6`（`0` = 周日） |
+| `records[].start_min` | 整数 `≥ 0`，距当天 00:00 的分钟数 |
+| `records[].end_min` | 整数，满足 `start_min < end_min ≤ 1440` |
+| `records[].title` | 非空，1–255 字符 |
+
+响应：
+
+- `200` `{"message": "ok"}`
+- `400` 参数校验失败
+- `401` / `403` 同上
+
+### DELETE /api/v1/user/{username}/calendar
+
+删除当前用户的课表（连同全部课程条目）。需要认证，属主校验同上。幂等：课表不存在同样返回 `200`。
+
+响应：
+
+- `200` `{"message": "ok"}`
+- `401` / `403` 同上
 
 ### POST /api/v1/user/signout
 

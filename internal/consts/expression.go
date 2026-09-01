@@ -20,7 +20,8 @@ const (
 	ExprEntrycode    expression = "Attr-Entrycode"
 	ExprRegistercode expression = "Attr-Registercode"
 
-	ExprUser expression = "User"
+	ExprUser     expression = "User"
+	ExprCalendar expression = "Attr-Calendar"
 
 	ExprEnckey expression = "Crypto-PrivateKey"
 	ExprDeckey expression = "Crypto-PublicKey"
@@ -61,6 +62,13 @@ const (
 	JsonExprRole         expression = "role"
 	JsonExprTraceid      expression = "traceid"
 	JsonExprCallChain    expression = "call_chain"
+
+	JsonExprCalendarID expression = "calendar_id"
+	JsonExprRecords    expression = "records"
+	JsonExprWeekday    expression = "weekday"
+	JsonExprStartMin   expression = "start_min"
+	JsonExprEndMin     expression = "end_min"
+	JsonExprTitle      expression = "title"
 )
 
 // process
@@ -80,6 +88,7 @@ const (
 	ModExprHandlerMe       expression = "Handler-Me"
 	ModExprHandlerRefresh  expression = "Handler-Refresh"
 	ModExprHandlerSignout  expression = "Handler-Signout"
+	ModExprHandlerCalendar expression = "Handler-Calendar"
 
 	ModExprService      expression = "service"
 	ModExprServiceUser  expression = "Service-User"
@@ -103,4 +112,8 @@ const (
 	ExprReqAdminSudo expression = "Request-AdminSudo"
 	ExprReqRefresh   expression = "Request-Refresh"
 	ExprReqSignout   expression = "Request-Signout"
+
+	ExprReqCalendarGet    expression = "Request-CalendarGet"
+	ExprReqCalendarPut    expression = "Request-CalendarPut"
+	ExprReqCalendarDelete expression = "Request-CalendarDelete"
 )

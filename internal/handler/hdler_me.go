@@ -28,6 +28,11 @@ func (h *HandlerComplex) HandleMe(ctx *echo.Context) error {
 		return echo.ErrUnauthorized
 	}
 
+	// the :username path segment must denote the authenticated user
+	if err := requireSelf(ctx, claims); err != nil {
+		return err
+	}
+
 	b, err := h.ServiceUser.GetInfoMineByUid(claims.Uid)
 	utils.AppendCallChain(ctx, string(consts.ModExprServiceUser))
 	if err != nil {

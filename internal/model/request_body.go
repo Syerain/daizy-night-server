@@ -49,3 +49,20 @@ type SignoutBody struct {
 	// until signout-by-session is actually implemented
 	Session []string `json:"session"`
 }
+
+// CalendarItemBody is one weekly slot of a calendar-upsert request.
+type CalendarItemBody struct {
+	Weekday  time.Weekday `json:"weekday"`
+	StartMin int          `json:"start_min"`
+	EndMin   int          `json:"end_min"`
+	Title    string       `json:"title"`
+}
+
+// CalendarPutBody carries a full timetable replacement. UserID is NOT part
+// of the request payload: the handler fills it from the authenticated JWT
+// claims (like SignoutBody.Uid), and the :username path segment is checked
+// against the identity as well.
+type CalendarPutBody struct {
+	UserID  uint               `json:"-"`
+	Records []CalendarItemBody `json:"records"`
+}

@@ -79,11 +79,12 @@ func New(cfg *config.Config) (*Server, error) {
 	// dbware repo
 	repoUser := dbware.NewRepoUser(pDB)
 	repoToken := dbware.NewRepoToken(pDB, cfg)
+	repoCalendar := dbware.NewRepoCalendar(pDB)
 	repoRegcode := dbware.NewRepoRegistercode(pDB)
 
 	// service provider
 	pSvcCode := service.NewServiceCode(repoRegcode)
-	pSvcUser := service.NewServiceUser(repoUser, repoToken, pSvcCode, pCrypto)
+	pSvcUser := service.NewServiceUser(repoUser, repoToken, repoCalendar, pSvcCode, pCrypto)
 	pSvcAdmin := service.NewServiceAdmin()
 	s := service.NewServiceComplex(pSvcUser, pSvcCode, pSvcAdmin)
 

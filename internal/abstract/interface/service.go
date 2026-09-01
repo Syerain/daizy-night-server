@@ -7,10 +7,18 @@ type InterfaceServiceUser interface {
 	Login(b *model.LoginBody) (success bool, accessToken string, refreshToken string, err error)
 	Signout(b *model.SignoutBody) (success bool, err error)
 	RefreshAccessToken(rawToken string) (success bool, accessToken string, refreshToken string, err error)
+
 	GetUserByUid(uid uint) (*model.User, error)
 	GetUserByUsername(name string) (*model.User, error)
 	GetInfoMineByUid(uid uint) (*model.InfoMe, error)
+
 	GetUidByRefreshToken(rawToken string) (uint, error)
+
+	AddCalendar(cal *model.Calendar) error
+	UpdateCalendar(cal *model.Calendar) error
+	RemoveCalendarByModel(cal *model.Calendar) error
+	RemoveCalendarByUid(uid uint) error
+	GetCalendarByUid(uid uint) (*model.Calendar, error)
 }
 
 type InterfaceServiceCode interface {

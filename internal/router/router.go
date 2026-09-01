@@ -26,11 +26,17 @@ func New(
 	e.POST("/api/v1/login", h.HandleLogin)
 	e.POST("/api/v1/refresh-access-token", h.HandleRefreshAccessToken)
 
-	// endpoints that requires authen only
+	// endpoints that requires authen only.
+	// user-scoped routes carry a :username segment; handlers must verify it
+	// matches the authenticated identity (requireSelf), uid/ownership always
+	// comes from the JWT claims.
 	ptAuthOnly := e.Group("/api/v1")
 	ptAuthOnly.Use(mid.AuthenJWT(pCrypto))
-	ptAuthOnly.GET("/user/me", h.HandleMe)
+	ptAuthOnly.GET("/user/:username/me", h.HandleMe)
 	ptAuthOnly.POST("/user/signout", h.HandleSignout)
+	ptAuthOnly.GET("/user/:username/calendar", h.HandleCalendarGet)
+	ptAuthOnly.PUT("/user/:username/calendar", h.HandleCalendarPut)
+	ptAuthOnly.DELETE("/user/:username/calendar", h.HandleCalendarDelete)
 
 	// admin only endpoints
 	ptAdmin := e.Group("/api/v1/admin")

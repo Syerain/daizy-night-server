@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"reflect"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/atomreforge/daizy-night-server/internal/consts"
@@ -146,5 +148,35 @@ func ValidateSignoutParams(b *model.SignoutBody) error {
 		return errs.BuildErrValidation(errs.ValidationKeyNull, http.StatusBadRequest, string(consts.JsonExprRefreshToken), string(consts.ExprBlank))
 	}
 
+	return nil
+}
+
+const (
+	// hard cap on slots per timetable request, protects the db from abuse
+	maxCalendarRecords = 200
+	minutesPerDay      = 24 * 60
+)
+
+// ValidateCalendarPutParams checks a full timetable replacement. an empty
+// records list is valid (it clears the timetable). every slot must stay
+// within one day: 0 <= start_min < end_min <= 1440.
+func ValidateCalendarPutParams(b *model.CalendarPutBody) error {
+	if len(b.Records) > maxCalendarRecords {
+		return errs.BuildErrValidation(errs.ValidationKeyInvalidLength, http.StatusBadRequest, string(consts.JsonExprRecords), fmt.Sprintf("%d", len(b.Records)))
+	}
+	for _, it := range b.Records {
+		if it.Weekday < time.Sunday || it.Weekday > time.Saturday {
+			return errs.BuildErrValidation(errs.ValidationKeyBadFormat, http.StatusBadRequest, string(consts.JsonExprWeekday), fmt.Sprintf("%d", it.Weekday))
+		}
+		if it.StartMin < 0 || it.EndMin > minutesPerDay || it.StartMin >= it.EndMin {
+			return errs.BuildErrValidation(errs.ValidationKeyBadFormat, http.StatusBadRequest, string(consts.JsonExprStartMin)+"::"+string(consts.JsonExprEndMin), fmt.Sprintf("%d..%d", it.StartMin, it.EndMin))
+		}
+		if _, err := validateNonNull(it.Title); err != nil {
+			return errs.BuildErrValidation(errs.ValidationKeyNull, http.StatusBadRequest, string(consts.JsonExprTitle), string(consts.ExprBlank))
+		}
+		if _, err := validateLengthValid(it.Title, 1, 255); err != nil {
+			return errs.BuildErrValidation(errs.ValidationKeyInvalidLength, http.StatusBadRequest, string(consts.JsonExprTitle), it.Title)
+		}
+	}
 	return nil
 }
