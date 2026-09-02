@@ -69,7 +69,7 @@ func New(cfg *config.Config) (*Server, error) {
 		IsDebugMode bool
 		DSN         string
 	}{
-		IsDebugMode: cfg.Main.IsDebugMode,
+		IsDebugMode: cfg.Database.IsDebugMode,
 		DSN:         cfg.Database.DSN,
 	})
 	if err != nil {
