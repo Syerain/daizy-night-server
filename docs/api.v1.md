@@ -125,9 +125,9 @@
 }
 ```
 
-- `401` refresh token 无法在库中找到或已被吊销（含已使用 token 的重放）
-- `400` 请求体不是合法 JSON
-- `500` `refresh_token` 字段缺失、token 过期或验签失败（非业务错误，统一回退 `internal server error`）
+- `401` refresh token 无效：缺失、过期、伪造/验签失败、格式非法、未在库中找到，或已被吊销（含已使用 token 的重放）。统一业务错误格式，如 `failure in user login; details::token expired`、`details::invalid token`
+- `400` 请求体不是合法 JSON，或 `refresh_token` 字段缺失
+- `500` 未预期的服务端错误（正常分支不应出现）
 
 轮换语义：
 
@@ -269,5 +269,5 @@
 
 - access token 载荷：`uid`、`username`、`role`、`iat`、`exp`；角色取值 `user` / `admin`
 - refresh token 载荷另含随机 `jti`；服务端只存哈希，不存原文
-- 已吊销的 token 记录保留 72h，超期由服务端自动清理
+- 已吊销的 token 记录保留 72h，超期由服务端自动清理；自然过期且超过「有效期 + 保留窗口」的记录同样会被自动清理
 - 客户端保存的 refresh token 一旦被使用即作废，重放会得到 401，此时应引导用户重新登录

@@ -29,6 +29,9 @@ const (
 	UserLoginParamsIncorrect
 	UserLoginParamsIncorrectPassword
 
+	UserLoginTokenExpired
+	UserLoginTokenInvalid
+
 	RegistercodeFormat
 	RegistercodeFormatInvalidLength
 	RegistercodeFormatInvalidChar
@@ -94,6 +97,10 @@ func (t *errType) Say() string {
 		return "incorrect user login params"
 	case UserLoginParamsIncorrectPassword:
 		return "incorrect password"
+	case UserLoginTokenExpired:
+		return "token expired"
+	case UserLoginTokenInvalid:
+		return "invalid token"
 	case DbRecordNotFound:
 		return "db record not found"
 	case DbRecordUsernameNotFound:

@@ -95,11 +95,32 @@ func (p *ProviderCrypto) SignRefreshToken(payload model.JwtRefreshTokenPayload) 
 	return token.SignedString(p.JwtRefreshTokenEnckey)
 }
 
+// mapTokenError converts raw jwt parse failures into business errors so the
+// HTTP error handler can answer 401 with a readable message instead of
+// falling back to a generic 500 (a *jwt.ValidationError carries no status).
+func mapTokenError(err error) error {
+	if errors.Is(err, jwt.ErrTokenExpired) {
+		return errs.BuildErrUserLogin(
+			errs.UserLoginTokenExpired,
+			http.StatusUnauthorized,
+			string(consts.ExprIndetermined),
+		)
+	}
+	return errs.BuildErrUserLogin(
+		errs.UserLoginTokenInvalid,
+		http.StatusUnauthorized,
+		string(consts.ExprIndetermined),
+	)
+}
+
 func (p *ProviderCrypto) VerifyAccessToken(tokenStr string) (*model.JwtAccessTokenPayload, error) {
 	var payload model.JwtAccessTokenPayload
 	token, err := jwt.ParseWithClaims(tokenStr, &payload, NewJWTKeyFunc(p.JwtAccessTokenDeckey))
-	if err != nil || !token.Valid {
-		return nil, err
+	if err != nil {
+		return nil, mapTokenError(err)
+	}
+	if !token.Valid {
+		return nil, mapTokenError(jwt.ErrTokenNotValidYet)
 	}
 	return &payload, nil
 }
@@ -107,8 +128,11 @@ func (p *ProviderCrypto) VerifyAccessToken(tokenStr string) (*model.JwtAccessTok
 func (p *ProviderCrypto) VerifyRefreshToken(tokenStr string) (*model.JwtRefreshTokenPayload, error) {
 	var payload model.JwtRefreshTokenPayload
 	token, err := jwt.ParseWithClaims(tokenStr, &payload, NewJWTKeyFunc(p.JwtRefreshTokenDeckey))
-	if err != nil || !token.Valid {
-		return nil, err
+	if err != nil {
+		return nil, mapTokenError(err)
+	}
+	if !token.Valid {
+		return nil, mapTokenError(jwt.ErrTokenNotValidYet)
 	}
 	return &payload, nil
 }

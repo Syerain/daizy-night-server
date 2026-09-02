@@ -20,6 +20,11 @@ func (h *HandlerComplex) HandleRefreshAccessToken(ctx *echo.Context) error {
 		return err
 	}
 
+	// a missing token is 400 validation, not 401 lookup-miss
+	if err := ValidateRefreshParams(req.RefreshToken); err != nil {
+		return err
+	}
+
 	// lookup twice; wait for optimization
 	uid, err := h.ServiceUser.GetUidByRefreshToken(req.RefreshToken)
 	if err != nil {

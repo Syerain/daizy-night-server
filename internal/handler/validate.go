@@ -151,6 +151,16 @@ func ValidateSignoutParams(b *model.SignoutBody) error {
 	return nil
 }
 
+// ValidateRefreshParams checks the refresh request body before any service
+// call: a missing token is a client validation problem (400), not a lookup
+// miss (401).
+func ValidateRefreshParams(refreshToken string) error {
+	if _, err := validateNonNull(refreshToken); err != nil {
+		return errs.BuildErrValidation(errs.ValidationKeyNull, http.StatusBadRequest, string(consts.JsonExprRefreshToken), string(consts.ExprBlank))
+	}
+	return nil
+}
+
 const (
 	// hard cap on slots per timetable request, protects the db from abuse
 	maxCalendarRecords = 200
