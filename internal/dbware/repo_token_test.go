@@ -73,7 +73,7 @@ func TestPruneStaleTokensRemovesExpired(t *testing.T) {
 	r := newTokenTestEnv(t)
 	now := time.Now()
 
-	expired := now.Add(-240 * time.Hour)      // 168h lifetime + 72h buffer: gone
+	expired := now.Add(-241 * time.Hour)      // strictly beyond 168h lifetime + 72h buffer: gone
 	withinBuffer := now.Add(-180 * time.Hour) // expired, but inside the buffer: kept
 	active := now.Add(-2 * time.Hour)         // alive: kept
 	mustInsertToken(t, r, &expired, nil, "expired")

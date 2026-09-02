@@ -1,6 +1,7 @@
 package dbware
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -17,22 +18,24 @@ import (
 // opening it through NewProviderDB rebuilds the table without the column,
 // keeping the rows and staying writable afterwards.
 func TestLegacyTokenHashColumnIsDropped(t *testing.T) {
-	dsn := "file:dntest_legacy_tokenhash?mode=memory&cache=shared"
+	// a unique name per run: shared-cache memory databases live for the whole
+	// process, so a fixed name would collide under -count > 1
+	dsn := fmt.Sprintf("file:dntest_legacy_tokenhash_%d?mode=memory&cache=shared", time.Now().UnixNano())
 
 	// simulate the legacy database
 	legacy, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
 	if err != nil {
 		t.Fatalf("open legacy db: %v", err)
 	}
-	if err := legacy.Exec("CREATE TABLE `refresh_tokens` ("+
-		"`id` integer PRIMARY KEY AUTOINCREMENT,"+
-		"`created_at` datetime,"+
-		"`updated_at` datetime,"+
-		"`deleted_at` datetime,"+
-		"`uid` integer NOT NULL,"+
-		"`token_hash` text NOT NULL,"+
-		"`lookup_hash` text NOT NULL,"+
-		"`revoked_at` datetime,"+
+	if err := legacy.Exec("CREATE TABLE `refresh_tokens` (" +
+		"`id` integer PRIMARY KEY AUTOINCREMENT," +
+		"`created_at` datetime," +
+		"`updated_at` datetime," +
+		"`deleted_at` datetime," +
+		"`uid` integer NOT NULL," +
+		"`token_hash` text NOT NULL," +
+		"`lookup_hash` text NOT NULL," +
+		"`revoked_at` datetime," +
 		"CONSTRAINT `uni_refresh_tokens_token_hash` UNIQUE (`token_hash`))").Error; err != nil {
 		t.Fatalf("create legacy table: %v", err)
 	}
