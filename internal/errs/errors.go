@@ -31,7 +31,7 @@ func (e *ErrValidation) Error() string {
 }
 func (e *ErrValidation) StatusCode() int { return e.Http }
 func (e *ErrValidation) Respond() string {
-	return fmt.Sprintf("failure in params validation; field::%s; details::%s", e.Field, e.Type.Say())
+	return fmt.Sprintf("failure in params validation; field::%s; description::%s", e.Field, e.Type.Say())
 }
 
 // user login
@@ -46,7 +46,7 @@ func (e *ErrUserLogin) Error() string {
 }
 func (e *ErrUserLogin) StatusCode() int { return e.Http }
 func (e *ErrUserLogin) Respond() string {
-	return fmt.Sprintf("failure in user login; details::%s", e.Type.Say())
+	return fmt.Sprintf("failure in user login; description::%s", e.Type.Say())
 }
 
 // registercode
@@ -60,7 +60,7 @@ func (e *ErrRegistercode) Error() string {
 }
 func (e *ErrRegistercode) StatusCode() int { return e.Http }
 func (e *ErrRegistercode) Respond() string {
-	return fmt.Sprintf("failure in checking registercode; details::%s", e.Type.Say())
+	return fmt.Sprintf("failure in checking registercode; description::%s", e.Type.Say())
 }
 
 // support/unsupported
@@ -95,5 +95,19 @@ func (e *ErrDbRecord) Error() string {
 }
 func (e *ErrDbRecord) StatusCode() int { return e.Http }
 func (e *ErrDbRecord) Respond() string {
-	return fmt.Sprintf("error in db record; field::%s; details::%s", e.Field, e.Type.Say())
+	return fmt.Sprintf("error in db record; field::%s; description::%s", e.Field, e.Type.Say())
+}
+
+type ErrJwtToken struct {
+	Type  errType
+	Http  int
+	Field string
+}
+
+func (e *ErrJwtToken) Error() string {
+	return fmt.Sprintf("error in jwt token; details::%s", e.Type.Say())
+}
+func (e *ErrJwtToken) StatusCode() int { return e.Http }
+func (e *ErrJwtToken) Respond() string {
+	return fmt.Sprintf("error in jwt token; field::%s; description::%s", e.Field, e.Type.Say())
 }

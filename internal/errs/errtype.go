@@ -50,8 +50,20 @@ const (
 
 	DbRecordNotFound
 	DbRecordUsernameNotFound
+	DbRecordEmailNotFound
+
+	JwtAccessTokenExpired
+	JwtAccessTokenInvalid
+	JwtAccessTokenNotFound
+
+	JwtRefreshTokenInvalid
+	JwtRefreshTokenRevoked
+	JwtRefreshTokenNotFound
+	JwtRefreshTokenUsed
+	JwtRefreshTokenExpired
 )
 
+/*
 func (t *errType) Say() string {
 	switch *t {
 	case Unknown:
@@ -110,6 +122,70 @@ func (t *errType) Say() string {
 		return "expected signing method of public key"
 	case ValidationKeyBadFormat:
 		return "key bad format"
+	}
+	return "error description undefined"
+}*/
+
+var errorMessages = map[errType]string{
+	Unknown:   "unknown error",
+	Undefined: "undefined error",
+
+	ValidationCryptoUnexpectedSigningMethod: "expected signing method of public key",
+
+	ValidationKeyNull:            "must not be null",
+	ValidationKeyOverLength:      "length should be shorter than 15 chars",
+	ValidationKeyInvalidLength:   "invalid length", // length should be 32 chars
+	ValidationKeyInvalidChar:     "invalid chars",
+	ValidationKeyDuplicatedValue: "duplicated value",
+	ValidationKeyBadFormat:       "key bad format",
+
+	RegistercodeFormat:              "invalid registercode format",
+	RegistercodeFormatInvalidLength: "registercode length should be shorter than 15 chars",
+	RegistercodeFormatInvalidChar:   "registercode must contains digits and english letters only",
+
+	RegistercodeAuthen:       "registercode authentication failed",
+	RegistercodeAuthenFailed: "registercode signature verification failed",
+
+	RegistercodeUnusable:                 "unusable registercode",
+	RegistercodeUnusableOutdated:         "outdated registercode",
+	RegistercodeUnusableUsed:             "used registercode",
+	RegistercodeUnusableRepeatedUsername: "repeated username in registercode",
+	RegistercodeUnmarshalFailed:          "failed to unmarshal regcode to golang struct",
+
+	FeatureUnsupported: "unsupported feature",
+
+	UserLoginParamsIncorrect:         "incorrect user login params",
+	UserLoginParamsIncorrectPassword: "incorrect password",
+	UserLoginTokenExpired:            "token expired",
+	UserLoginTokenInvalid:            "invalid token",
+
+	DbRecordNotFound:         "db record not found",
+	DbRecordUsernameNotFound: "unknown user",
+	DbRecordEmailNotFound:    "unknown email",
+
+	JwtAccessTokenExpired:  "jwt access token expired",
+	JwtAccessTokenInvalid:  "jwt access token invalid",
+	JwtAccessTokenNotFound: "jwt access token not found",
+
+	JwtRefreshTokenInvalid:  "jwt refresh token invalid",
+	JwtRefreshTokenRevoked:  "jwt refresh token revoked",
+	JwtRefreshTokenNotFound: "jwt refresh token not found",
+	JwtRefreshTokenUsed:     "jwt refresh token used",
+	JwtRefreshTokenExpired:  "jwt refresh token expired",
+}
+
+/*
+
+var errorMessages = map[errType]string{
+    Unknown:                         "unknown error",
+    Undefined:                       "undefined error",
+    ValidationKeyNull:               "must not be null",
+    ValidationKeyOverLength:         "length should be shorter than 15 chars",
+}*/
+
+func (t *errType) Say() string {
+	if msg, ok := errorMessages[*t]; ok {
+		return msg
 	}
 	return "error description undefined"
 }
