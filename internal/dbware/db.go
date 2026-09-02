@@ -48,24 +48,57 @@ func NewProviderDB(ctx struct {
 		return nil, err
 	}
 
-	// legacy migration: databases created before the TokenHash removal keep a
-	// NOT NULL token_hash column; leaving it behind would break every insert.
-	// gorm's generic HasColumn probes INFORMATION_SCHEMA, which does not exist
-	// on SQLite (it silently reports false), so the check goes through pragma.
-	var cols []string
-	if err := db.Raw(`SELECT name FROM pragma_table_info('refresh_tokens')`).Scan(&cols).Error; err != nil {
+	// legacy migration for databases created before the TokenHash removal
+	if err := migrateLegacyTokenHash(db); err != nil {
 		return nil, err
-	}
-	for _, c := range cols {
-		if c == "token_hash" {
-			if err := db.Migrator().DropColumn(&model.RefreshToken{}, "token_hash"); err != nil {
-				return nil, err
-			}
-			break
-		}
 	}
 
 	return &ProviderDB{db: db}, nil
+}
+
+// migrateLegacyTokenHash rebuilds refresh_tokens without the removed
+// token_hash column. Legacy tables declare it through a table-level UNIQUE
+// constraint (the gorm `unique` tag compiles to CONSTRAINT ... UNIQUE),
+// which neither ALTER TABLE DROP COLUMN nor Migrator.DropColumn can remove —
+// the constraint clause keeps referencing the dropped column — so the table
+// is renamed, recreated fresh, and its rows are copied over explicitly.
+func migrateLegacyTokenHash(db *gorm.DB) error {
+	var hasTokenHash int64
+	if err := db.Raw(`SELECT count(*) FROM pragma_table_info('refresh_tokens') WHERE name = 'token_hash'`).Scan(&hasTokenHash).Error; err != nil {
+		return err
+	}
+	if hasTokenHash == 0 {
+		return nil
+	}
+
+	const legacy = "refresh_tokens_legacy"
+	if err := db.Migrator().RenameTable("refresh_tokens", legacy); err != nil {
+		return err
+	}
+
+	// named indexes travel with the renamed table and would collide with the
+	// ones AutoMigrate creates on the fresh table; drop them up front. the
+	// autoindexes of table-level constraints go away with DROP TABLE.
+	var idxNames []string
+	if err := db.Raw(`SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = ? AND name NOT LIKE 'sqlite_autoindex_%'`, legacy).Scan(&idxNames).Error; err != nil {
+		return err
+	}
+	for _, idx := range idxNames {
+		if err := db.Exec("DROP INDEX IF EXISTS " + idx).Error; err != nil {
+			return err
+		}
+	}
+
+	if err := db.AutoMigrate(&model.RefreshToken{}); err != nil {
+		return err
+	}
+	if err := db.Exec(`INSERT INTO refresh_tokens
+		(id, created_at, updated_at, deleted_at, uid, lookup_hash, revoked_at)
+		SELECT id, created_at, updated_at, deleted_at, uid, lookup_hash, revoked_at
+		FROM ` + legacy).Error; err != nil {
+		return err
+	}
+	return db.Migrator().DropTable(legacy)
 }
 
 // check db health
