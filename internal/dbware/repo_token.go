@@ -26,8 +26,8 @@ func NewRepoToken(pDB abstract.InterfaceProviderDB, cfg *config.Config) *RepoTok
 }
 
 func (r *RepoToken) SaveRefreshToken(uid uint, rawToken string) error {
-	// clear expired tokens
-	if err := r.PruneRevokedTokens(uid); err != nil {
+	// prune tokens that can never authenticate again
+	if err := r.PruneStaleTokens(uid); err != nil {
 		return err
 	}
 
@@ -69,20 +69,41 @@ func (r *RepoToken) RevokeRefreshToken(uid uint, rawToken string) error {
 		Update("revoked_at", time.Now()).Error
 }
 
-func (r *RepoToken) PruneRevokedTokens(uid uint) error {
-	cutoff := time.Now().Add(-r.cfg.Security.JwtRevokedTokensRetainTime)
-	return r.pDB.DB().Where("uid = ? AND revoked_at IS NOT NULL AND revoked_at < ?", uid, cutoff).
-		Delete(&model.RefreshToken{}).Error
+// pruneStale removes rows of a user that can never authenticate again:
+//   - revoked, and past the revoked-tokens retention window;
+//   - expired-and-stale: older than the refresh lifetime plus the retention
+//     buffer, unless the revocation itself is still inside the retention
+//     window (documented semantics: a revoked record is kept for 72h).
+//
+// Before the second rule, tokens that expired naturally (revoked_at IS NULL)
+// were never cleaned up and the table grew without bound. It runs inside the
+// caller's transaction when invoked from RotateRefreshToken.
+func (r *RepoToken) pruneStale(tx *gorm.DB, uid uint) error {
+	now := time.Now()
+	cutoffRevoked := now.Add(-r.cfg.Security.JwtRevokedTokensRetainTime)
+	if err := tx.Where(
+		"uid = ? AND revoked_at IS NOT NULL AND revoked_at < ?",
+		uid, cutoffRevoked,
+	).Delete(&model.RefreshToken{}).Error; err != nil {
+		return err
+	}
+	cutoffExpired := now.Add(-(r.cfg.Security.JwtRefreshTokenExpireTime + r.cfg.Security.JwtRevokedTokensRetainTime))
+	return tx.Where(
+		"uid = ? AND created_at < ? AND (revoked_at IS NULL OR revoked_at < ?)",
+		uid, cutoffExpired, cutoffRevoked,
+	).Delete(&model.RefreshToken{}).Error
+}
+
+// PruneStaleTokens prunes unusable tokens of a user on the shared connection.
+func (r *RepoToken) PruneStaleTokens(uid uint) error {
+	return r.pruneStale(r.pDB.DB(), uid)
 }
 
 func (r *RepoToken) RotateRefreshToken(uid uint, usedLookupHash string, newRawToken string) error {
 	newLookupHash := utils.SHA256HashHex(newRawToken)
 
 	return r.pDB.DB().Transaction(func(tx *gorm.DB) error {
-		cutoff := time.Now().Add(-r.cfg.Security.JwtRevokedTokensRetainTime)
-		if err := tx.
-			Where("uid = ? AND revoked_at IS NOT NULL AND revoked_at < ?", uid, cutoff).
-			Delete(&model.RefreshToken{}).Error; err != nil {
+		if err := r.pruneStale(tx, uid); err != nil {
 			return err
 		}
 
