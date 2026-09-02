@@ -24,48 +24,89 @@ func NewRepoUser(pDB abstract.InterfaceProviderDB) *RepoUser {
 	return &RepoUser{pDB: pDB}
 }
 
+// CreateUser shares the maxGenIDAttempts retry bound declared in
+// repo_calendar.go for the same random 7-digit business id recipe.
 func (r *RepoUser) CreateUser(b *model.User) error {
 	return r.pDB.DB().Transaction(func(tx *gorm.DB) error {
-		// generate attrs
-		uid, err := utils.GenUid()
-		if err != nil {
+		// precise attribution pre-checks. the sqlite driver translates every
+		// unique violation into gorm.ErrDuplicatedKey without revealing which
+		// index fired, so conflicts are identified by cheap indexed lookups.
+		var n int64
+		if err := tx.Model(&model.User{}).Where("username = ?", b.Username).Count(&n).Error; err != nil {
 			return err
 		}
-		b.UserID = uid
-		b.RegisterTime = time.Now()
-
-		// create user
-		if err := tx.Create(b).Error; err != nil {
-			if errors.Is(err, gorm.ErrDuplicatedKey) {
-				return errs.BuildErrValidation(errs.ValidationKeyDuplicatedValue, http.StatusBadRequest, string(consts.ExprUsername), b.Username)
-			}
+		if n > 0 {
+			return errs.BuildErrValidation(errs.ValidationKeyDuplicatedValue, http.StatusBadRequest, string(consts.ExprUsername), b.Username)
+		}
+		if err := tx.Model(&model.User{}).Where("registercode = ?", string(b.Registercode)).Count(&n).Error; err != nil {
 			return err
 		}
-
-		/*err = tx.Create(&model.RegistercodeRecord{
-			RawHex: b.Registercode,
-			Used:   true,
-			UserID: &b.UserID,
-		}).Error
-
-		if err == nil {
-			return nil
-		}
-		if !errors.Is(err, gorm.ErrDuplicatedKey) {
-			return err
-		}*/
-
-		res := tx.Model(&model.RegistercodeRecord{}).
-			Where("raw_hex = ? AND used = ?", string(b.Registercode), false).
-			Updates(map[string]any{"used": true, "user_id": b.UserID})
-		if res.Error != nil {
-			return res.Error
-		}
-		if res.RowsAffected != 1 {
+		if n > 0 {
 			return errs.BuildErrRegistercode(errs.RegistercodeUnusableUsed, http.StatusBadRequest)
 		}
-		return nil
+
+		for i := 0; i < maxGenIDAttempts; i++ {
+			uid, err := utils.GenUid()
+			if err != nil {
+				return err
+			}
+			b.UserID = uid
+			b.RegisterTime = time.Now()
+
+			err = tx.Create(b).Error
+			if err == nil {
+				return claimRegistercode(tx, b)
+			}
+			if !errors.Is(err, gorm.ErrDuplicatedKey) {
+				return err
+			}
+
+			// a concurrent registration may have taken the username or the
+			// registercode after the pre-checks; re-check to attribute, and
+			// otherwise treat the violation as a user_id collision.
+			if err := attributeDuplicate(tx, b); err != nil {
+				return err
+			}
+		}
+		return errs.BuildErrValidation(errs.ValidationKeyDuplicatedValue, http.StatusInternalServerError, "uid", "")
 	})
+}
+
+// attributeDuplicate re-checks which unique column caused a violation right
+// after gorm.ErrDuplicatedKey. It returns a precise business error when the
+// conflict is on username or registercode, and nil when the remaining
+// explanation is a user_id collision (the caller retries with a new uid).
+func attributeDuplicate(tx *gorm.DB, b *model.User) error {
+	var n int64
+	if err := tx.Model(&model.User{}).Where("username = ?", b.Username).Count(&n).Error; err != nil {
+		return err
+	}
+	if n > 0 {
+		return errs.BuildErrValidation(errs.ValidationKeyDuplicatedValue, http.StatusBadRequest, string(consts.ExprUsername), b.Username)
+	}
+	if err := tx.Model(&model.User{}).Where("registercode = ?", string(b.Registercode)).Count(&n).Error; err != nil {
+		return err
+	}
+	if n > 0 {
+		return errs.BuildErrRegistercode(errs.RegistercodeUnusableUsed, http.StatusBadRequest)
+	}
+	return nil
+}
+
+// claimRegistercode marks the registercode row as used inside the same
+// transaction that created the user. A zero-row update means the code was
+// claimed concurrently and rolls the whole registration back.
+func claimRegistercode(tx *gorm.DB, b *model.User) error {
+	res := tx.Model(&model.RegistercodeRecord{}).
+		Where("raw_hex = ? AND used = ?", string(b.Registercode), false).
+		Updates(map[string]any{"used": true, "user_id": b.UserID})
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected != 1 {
+		return errs.BuildErrRegistercode(errs.RegistercodeUnusableUsed, http.StatusBadRequest)
+	}
+	return nil
 }
 
 func (r *RepoUser) GetUserByUsername(name string) (*model.User, error) {
