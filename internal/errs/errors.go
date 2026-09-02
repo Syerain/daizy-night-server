@@ -111,3 +111,17 @@ func (e *ErrJwtToken) StatusCode() int { return e.Http }
 func (e *ErrJwtToken) Respond() string {
 	return fmt.Sprintf("error in jwt token; field::%s; description::%s", e.Field, e.Type.Say())
 }
+
+type ErrConnDb struct {
+	Type  errType
+	Http  int
+	Field string
+}
+
+func (e *ErrConnDb) Error() string {
+	return fmt.Sprintf("error in db connection; details::%s", e.Type.Say())
+}
+func (e *ErrConnDb) StatusCode() int { return e.Http }
+func (e *ErrConnDb) Respond() string {
+	return fmt.Sprintf("error with db.")
+}

@@ -31,3 +31,7 @@ func BuildErrDbRecord(errtype ErrType, http int, field string) *ErrDbRecord {
 func BuildErrJwtToken(errtype ErrType, http int) *ErrJwtToken {
 	return &ErrJwtToken{Type: errtype, Http: http}
 }
+
+func BuildErrConnDb(errtype ErrType, http int) *ErrConnDb {
+	return &ErrConnDb{Type: errtype, Http: http}
+}

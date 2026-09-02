@@ -9,20 +9,28 @@ type InterfaceHandlerComplex interface {
 		svcUser abstract.InterfaceServiceUser,
 		svcCode abstract.InterfaceServiceCode,
 		svcAdmin abstract.InterfaceServiceAdmin,
+		svcHealth abstract.InterfaceServiceHealth,
 	) *HandlerComplex
 }
 
 // HandleXXX() is func of HandlerComplex
 type HandlerComplex struct {
-	ServiceUser  abstract.InterfaceServiceUser
-	ServiceCode  abstract.InterfaceServiceCode
-	ServiceAdmin abstract.InterfaceServiceAdmin
+	ServiceUser   abstract.InterfaceServiceUser
+	ServiceCode   abstract.InterfaceServiceCode
+	ServiceAdmin  abstract.InterfaceServiceAdmin
+	ServiceHealth abstract.InterfaceServiceHealth
 }
 
-func NewHandlerComplex(svcUser abstract.InterfaceServiceUser, svcCode abstract.InterfaceServiceCode, svcAdmin abstract.InterfaceServiceAdmin) *HandlerComplex {
+func NewHandlerComplex(
+	svcUser abstract.InterfaceServiceUser,
+	svcCode abstract.InterfaceServiceCode,
+	svcAdmin abstract.InterfaceServiceAdmin,
+	svcHealth abstract.InterfaceServiceHealth,
+) *HandlerComplex {
 	return &HandlerComplex{
-		ServiceUser:  svcUser,
-		ServiceCode:  svcCode,
-		ServiceAdmin: svcAdmin,
+		ServiceUser:   svcUser,
+		ServiceCode:   svcCode,
+		ServiceAdmin:  svcAdmin,
+		ServiceHealth: svcHealth,
 	}
 }

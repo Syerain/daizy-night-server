@@ -41,6 +41,7 @@ func New(
 	ptAuthOnly.GET("/user/:username/calendar", h.HandleCalendarGet)
 	ptAuthOnly.PUT("/user/:username/calendar", h.HandleCalendarPut)
 	ptAuthOnly.DELETE("/user/:username/calendar", h.HandleCalendarDelete)
+	ptAuthOnly.GET("/health/db", h.HandleHealthCheckDb)
 
 	// admin only endpoints
 	ptAdmin := e.Group("/api/v1/admin")

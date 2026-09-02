@@ -61,70 +61,13 @@ const (
 	JwtRefreshTokenNotFound
 	JwtRefreshTokenUsed
 	JwtRefreshTokenExpired
+
+	ConnGeneralInterrupted
+
+	ConnDb
+	ConnDbTimeout
+	ConnDbInterrupted
 )
-
-/*
-func (t *errType) Say() string {
-	switch *t {
-	case Unknown:
-		return "unknown error"
-	case Undefined:
-		return "undefined error"
-	case ValidationKeyNull:
-		return "must not be null"
-	case ValidationKeyOverLength:
-		return "length should be shorter than 15 chars"
-	case ValidationKeyInvalidLength:
-		return "invalid length"
-	case ValidationKeyInvalidChar:
-		return "must contains digits and english letters only"
-	case ValidationKeyDuplicatedValue:
-		return "duplicated value"
-
-	case RegistercodeFormat:
-		return "invalid registercode format"
-	case RegistercodeFormatInvalidLength:
-		return "registercode length should be shorter than 15 chars"
-	case RegistercodeFormatInvalidChar:
-		return "registercode must contains digits and english letters only"
-
-	case RegistercodeAuthen:
-		return "registercode authentication failed"
-	case RegistercodeAuthenFailed:
-		return "registercode signature verification failed"
-
-	case RegistercodeUnusable:
-		return "unusable registercode"
-	case RegistercodeUnusableOutdated:
-		return "outdated registercode"
-	case RegistercodeUnusableUsed:
-		return "used registercode"
-	case RegistercodeUnusableRepeatedUsername:
-		return "repeated username in registercode"
-	case RegistercodeUnmarshalFailed:
-		return "failed to unmarshal regcode to golang struct"
-	case FeatureUnsupported:
-		return "unsupported feature"
-	case UserLoginParamsIncorrect:
-		return "incorrect user login params"
-	case UserLoginParamsIncorrectPassword:
-		return "incorrect password"
-	case UserLoginTokenExpired:
-		return "token expired"
-	case UserLoginTokenInvalid:
-		return "invalid token"
-	case DbRecordNotFound:
-		return "db record not found"
-	case DbRecordUsernameNotFound:
-		return "unknown user"
-
-	case ValidationCryptoUnexpectedSigningMethod:
-		return "expected signing method of public key"
-	case ValidationKeyBadFormat:
-		return "key bad format"
-	}
-	return "error description undefined"
-}*/
 
 var errorMessages = map[errType]string{
 	Unknown:   "unknown error",
@@ -172,6 +115,12 @@ var errorMessages = map[errType]string{
 	JwtRefreshTokenNotFound: "jwt refresh token not found",
 	JwtRefreshTokenUsed:     "jwt refresh token used; user may has faced or is facing an attack;",
 	JwtRefreshTokenExpired:  "jwt refresh token expired",
+
+	ConnGeneralInterrupted: "connection interrupted",
+
+	ConnDb:            "db connection error",
+	ConnDbTimeout:     "db connection timeout",
+	ConnDbInterrupted: "db connection interrupted",
 }
 
 /*

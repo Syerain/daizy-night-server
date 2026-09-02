@@ -29,3 +29,7 @@ type InterfaceServiceCode interface {
 type InterfaceServiceAdmin interface {
 	Sudo()
 }
+
+type InterfaceServiceHealth interface {
+	HealthCheckDb() (bool, error)
+}

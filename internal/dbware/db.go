@@ -2,8 +2,10 @@ package dbware
 
 import (
 	"log/slog"
+	"net/http"
 
 	abstract "github.com/atomreforge/daizy-night-server/internal/abstract/interface"
+	"github.com/atomreforge/daizy-night-server/internal/errs"
 	"github.com/atomreforge/daizy-night-server/internal/model"
 
 	"gorm.io/driver/sqlite"
@@ -103,6 +105,12 @@ func migrateLegacyTokenHash(db *gorm.DB) error {
 
 // check db health
 func (p *ProviderDB) Check() error {
+	if p.db == nil {
+		return errs.BuildErrConnDb(
+			errs.ConnDb,
+			http.StatusInternalServerError,
+		)
+	}
 	sql, err := p.db.DB()
 	if err != nil {
 		return err
