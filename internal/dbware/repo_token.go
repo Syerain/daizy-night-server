@@ -31,13 +31,11 @@ func (r *RepoToken) SaveRefreshToken(uid uint, rawToken string) error {
 		return err
 	}
 
-	hash, err := utils.HashCreate(rawToken)
-	if err != nil {
-		return err
-	}
+	// only the SHA256 lookup hash is stored: the raw token never touches
+	// the database, and the expensive argon2 hash of the token proved to be
+	// write-only dead weight (nothing ever compared TokenHash).
 	return r.pDB.DB().Create(&model.RefreshToken{
 		Uid:        uid,
-		TokenHash:  hash,
 		LookupHash: utils.SHA256HashHex(rawToken),
 	}).Error
 }
@@ -78,10 +76,6 @@ func (r *RepoToken) PruneRevokedTokens(uid uint) error {
 }
 
 func (r *RepoToken) RotateRefreshToken(uid uint, usedLookupHash string, newRawToken string) error {
-	newTokenHash, err := utils.HashCreate(newRawToken)
-	if err != nil {
-		return err
-	}
 	newLookupHash := utils.SHA256HashHex(newRawToken)
 
 	return r.pDB.DB().Transaction(func(tx *gorm.DB) error {
@@ -108,7 +102,6 @@ func (r *RepoToken) RotateRefreshToken(uid uint, usedLookupHash string, newRawTo
 
 		return tx.Create(&model.RefreshToken{
 			Uid:        uid,
-			TokenHash:  newTokenHash,
 			LookupHash: newLookupHash,
 			RevokedAt:  nil,
 		}).Error
