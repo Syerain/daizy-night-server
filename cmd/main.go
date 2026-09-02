@@ -85,10 +85,11 @@ func New(cfg *config.Config) (*Server, error) {
 	pSvcCode := service.NewServiceCode(repoRegcode)
 	pSvcUser := service.NewServiceUser(repoUser, repoToken, repoCalendar, pSvcCode, pCrypto)
 	pSvcAdmin := service.NewServiceAdmin()
-	s := service.NewServiceComplex(pSvcUser, pSvcCode, pSvcAdmin)
+	pSvcHealth := service.NewServiceHealth(pDB)
+	s := service.NewServiceComplex(pSvcUser, pSvcCode, pSvcAdmin, pSvcHealth)
 
 	// handler
-	h := handler.NewHandlerComplex(s.ServiceUser, s.ServiceCode, s.ServiceAdmin)
+	h := handler.NewHandlerComplex(s.ServiceUser, s.ServiceCode, s.ServiceAdmin, s.ServiceHealth)
 
 	// Echo router
 	e := router.New(h, pCrypto, cfg)

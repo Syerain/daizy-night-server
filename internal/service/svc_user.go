@@ -231,12 +231,12 @@ func (s *ServiceUser) Login(b *model.LoginBody) (success bool, accessToken strin
 	}
 */
 func (s *ServiceUser) RefreshAccessToken(rawToken string) (success bool, accessToken string, refreshToken string, err error) {
-	payload, err := s.crypto.VerifyRefreshToken(rawToken)
+	inputPayload, err := s.crypto.VerifyRefreshToken(rawToken)
 	if err != nil {
 		return false, "", "", err
 	}
 
-	row, err := s.repoToken.GetRefreshToken(payload.Uid, rawToken)
+	row, err := s.repoToken.GetRefreshToken(inputPayload.Uid, rawToken)
 	if err != nil {
 		return false, "", "", err
 	}
@@ -251,9 +251,9 @@ func (s *ServiceUser) RefreshAccessToken(rawToken string) (success bool, accessT
 	// pure computations before any DB write: a signing failure leaves
 	// the database untouched and the old token valid
 	payloadAccess := model.JwtAccessTokenPayload{
-		Uid:      payload.Uid,
-		Username: payload.Username,
-		Role:     payload.Role,
+		Uid:      inputPayload.Uid,
+		Username: inputPayload.Username,
+		Role:     inputPayload.Role,
 	}
 	accessToken, err = s.crypto.SignAccessToken(payloadAccess)
 	if err != nil {
@@ -261,9 +261,9 @@ func (s *ServiceUser) RefreshAccessToken(rawToken string) (success bool, accessT
 	}
 
 	payloadRefresh := model.JwtRefreshTokenPayload{
-		Uid:      payload.Uid,
-		Username: payload.Username,
-		Role:     payload.Role,
+		Uid:      inputPayload.Uid,
+		Username: inputPayload.Username,
+		Role:     inputPayload.Role,
 	}
 	refreshToken, err = s.crypto.SignRefreshToken(payloadRefresh)
 	if err != nil {
@@ -271,10 +271,10 @@ func (s *ServiceUser) RefreshAccessToken(rawToken string) (success bool, accessT
 	}
 
 	// atomic rotation: revoke the used token + save the new one
-	if err = s.repoToken.RotateRefreshToken(payload.Uid, row.LookupHash, refreshToken); err != nil {
+	if err = s.repoToken.RotateRefreshToken(inputPayload.Uid, row.LookupHash, refreshToken); err != nil {
 		return false, "", "", err
 	}
-	defer slog.Info(fmt.Sprintf("successfully rotated/refreshed refresh-token; user::%s; uid::%d", payload.Username, payload.Uid))
+	defer slog.Info(fmt.Sprintf("successfully rotated/refreshed refresh-token; user::%s; uid::%d", inputPayload.Username, inputPayload.Uid))
 	return true, accessToken, refreshToken, nil
 }
 

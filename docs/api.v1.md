@@ -15,14 +15,18 @@
 
 | 场景 | 状态码 | message |
 |---|---|---|
-| 业务错误（校验失败、凭据错误、注册码无效等） | 400/401/404 | 可读描述，如 `failure in user login; details::...` |
-| 参数解析失败、验签失败、DB 错误等非业务错误 | 视错误而定 | 固定回退为 `internal server error` |
+| 业务错误（校验失败、凭据错误、注册码无效、token 过期/验签失败等） | 400/401/404 | 可读描述，如 `failure in user login; details::...` |
+| 参数解析失败、DB 错误等非业务错误 | 视错误而定 | 固定回退为 `internal server error` |
 | 未捕获的未知错误 | 500 | `internal server error` |
 
 ### 限流
 
 按客户端 IP 全局限流，超限返回 429 `{"message": "too many requests"}`。
 默认：速率 2 req/s，突发 7，窗口 3m（`config.yaml` 的 `http.rateLimit`）。
+
+### 请求体上限
+
+所有端点的请求体上限为 1 MiB（同时依据 `Content-Length` 与实际读取长度判定）；超限返回 `413`，message 为固定回退文本 `internal server error`。
 
 ### 用户资源路由与属主校验
 
@@ -46,7 +50,7 @@
 | `username` | string | 1-15 字符，仅允许 `a-zA-Z0-9` |
 | `nickname` | string | 1-15 字符 |
 | `password` | string | 6-128 字符 |
-| `registercode` | string | 注册码原文，格式 `<hex载荷>.<hex签名>` |
+| `registercode` | string | 注册码原文，格式 `<hex载荷>.<hex签名>`；签名段恒为 128 个十六进制字符（Ed25519），载荷段非空且 ≤ 2048 个十六进制字符 |
 
 ```json
 {
@@ -124,7 +128,7 @@
 }
 ```
 
-- `401` refresh token 无效：缺失、过期、伪造/验签失败、格式非法、未在库中找到，或已被吊销（含已使用 token 的重放）。统一业务错误格式，如 `failure in user login; details::token expired`、`details::invalid token`
+- `401` refresh token 无效：过期、伪造/验签失败、格式非法、未在库中找到，或已被吊销（含已使用 token 的重放）。统一业务错误格式 `failure in user login; details::...`：过期为 `token expired`，伪造/格式非法为 `invalid token`，未在库中找到/已吊销为 `incorrect user login params`
 - `400` 请求体不是合法 JSON，或 `refresh_token` 字段缺失
 - `500` 未预期的服务端错误（正常分支不应出现）
 
