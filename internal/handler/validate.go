@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"crypto/ed25519"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -129,6 +130,12 @@ func ValidateFormatRegistercode(c model.RegistercodeRawHex) (bool, error) {
 		return false, errs.BuildErrValidation(errs.ValidationKeyBadFormat, http.StatusBadRequest, string(consts.ExprRegistercode), c.String())
 	}
 	payloadHex, sigHex := string(c)[:i], string(c)[i+1:]
+	// an Ed25519 signature is exactly 64 bytes (128 hex chars); the payload
+	// is bounded above. cheap size gates before any hex parsing or crypto.
+	if len(sigHex) != 2*ed25519.SignatureSize ||
+		len(payloadHex) == 0 || len(payloadHex) > maxRegistercodePayloadHex {
+		return false, errs.BuildErrValidation(errs.ValidationKeyBadFormat, http.StatusBadRequest, string(consts.ExprRegistercode), c.String())
+	}
 	if !(utils.IsHex(payloadHex) && utils.IsHex(sigHex)) {
 		return false, errs.BuildErrValidation(errs.ValidationKeyBadFormat, http.StatusBadRequest, string(consts.ExprRegistercode), c.String())
 	}
@@ -165,6 +172,10 @@ const (
 	// hard cap on slots per timetable request, protects the db from abuse
 	maxCalendarRecords = 200
 	minutesPerDay      = 24 * 60
+
+	// registercode hex bounds: the payload is a tiny JSON (magicword +
+	// expiry; real codes are ~160 hex chars), the signature is fixed-size
+	maxRegistercodePayloadHex = 2048
 )
 
 // ValidateCalendarPutParams checks a full timetable replacement. an empty

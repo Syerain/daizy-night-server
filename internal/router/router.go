@@ -8,6 +8,7 @@ import (
 	mid "github.com/atomreforge/daizy-night-server/internal/middleware"
 
 	"github.com/labstack/echo/v5"
+	echomw "github.com/labstack/echo/v5/middleware"
 )
 
 func New(
@@ -18,8 +19,11 @@ func New(
 	// init
 	e := echo.New()
 
-	e.Use(mid.Inject())       // injector
-	e.Use(mid.RateLimit(cfg)) // rate limiter
+	// Recover is registered first so it also covers every middleware below
+	e.Use(echomw.Recover())
+	e.Use(mid.Inject())                  // injector
+	e.Use(mid.RateLimit(cfg))            // rate limiter
+	e.Use(echomw.BodyLimit(1024 * 1024)) // cap request bodies at 1 MiB, protects the db from abuse
 
 	// public routes
 	e.POST("/api/v1/register", h.HandleRegister)

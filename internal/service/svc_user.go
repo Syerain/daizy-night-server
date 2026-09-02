@@ -49,15 +49,6 @@ func NewServiceUser(
 func (s *ServiceUser) Register(b *model.RegisterBody) (*model.User, error) {
 	slog.Info("service processing register ...")
 
-	// repo record regcode
-	// keep all the contacted regcodes for review and maintenance.
-	if err := s.pSvcCode.RecordNewRegistercode(&model.RegistercodeRecord{
-		RawHex: b.Registercode,
-		Used:   false,
-	}); err != nil {
-		return nil, err
-	}
-
 	// router
 	switch b.Registerway {
 	case consts.RegisterLegacy:
@@ -65,13 +56,20 @@ func (s *ServiceUser) Register(b *model.RegisterBody) (*model.User, error) {
 		if err != nil {
 			return nil, err
 		} //it can only be ErrRegistercode
-		if payload == nil {
-			return nil, errs.BuildErrRegistercode(errs.RegistercodeUnusableOutdated, http.StatusBadRequest)
-		}
 
 		// verify before hashing
 		if !s.crypto.VerifyRegistercodePayload(*payload) {
-			return nil, errs.BuildErrRegistercode(errs.RegistercodeUnusableOutdated, 400)
+			return nil, errs.BuildErrRegistercode(errs.RegistercodeUnusableOutdated, http.StatusBadRequest)
+		}
+
+		// audit: record only registercodes whose signature and expiry both
+		// check out. recording attacker-controlled garbage before validation
+		// turned the audit table into an unauthenticated storage-filling vector.
+		if err := s.pSvcCode.RecordNewRegistercode(&model.RegistercodeRecord{
+			RawHex: b.Registercode,
+			Used:   false,
+		}); err != nil {
+			return nil, err
 		}
 
 		// salt psw after hashing; hashing is perf-expensive

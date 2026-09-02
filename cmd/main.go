@@ -22,7 +22,6 @@ import (
 	mid "github.com/atomreforge/daizy-night-server/internal/middleware"
 
 	"github.com/labstack/echo/v5"
-	"github.com/labstack/echo/v5/middleware"
 )
 
 // entrance
@@ -137,9 +136,6 @@ func New(cfg *config.Config) (*Server, error) {
 		// final response
 		mid.Respond(ctx, stat, string(consts.HttpExprInternalServerError))
 	}
-
-	// using Echo default Recover()
-	e.Use(middleware.Recover())
 
 	return &Server{
 		e:   e,
