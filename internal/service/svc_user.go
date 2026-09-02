@@ -272,7 +272,7 @@ func (s *ServiceUser) RefreshAccessToken(rawToken string) (success bool, accessT
 	if err = s.repoToken.RotateRefreshToken(payload.Uid, row.LookupHash, refreshToken); err != nil {
 		return false, "", "", err
 	}
-	defer slog.Info(fmt.Sprintf("successfully rotated refresh token; user::%s; uid::%d", payload.Username, payload.Uid))
+	defer slog.Info(fmt.Sprintf("successfully rotated/refreshed refresh-token; user::%s; uid::%d", payload.Username, payload.Uid))
 	return true, accessToken, refreshToken, nil
 }
 

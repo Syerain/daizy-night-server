@@ -147,3 +147,36 @@ func (r *RepoToken) GetUidByRefreshToken(rawToken string) (uint, error) {
 	}
 	return token.Uid, nil
 }
+
+func (r *RepoToken) GetUserByRefreshToken(rawToken string) (*model.User, error) {
+	var token model.RefreshToken
+	res := r.pDB.DB().
+		Where("lookup_hash = ? AND revoked_at IS NULL", utils.SHA256HashHex(rawToken)).
+		First(&token)
+	if res.Error != nil {
+		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+			return nil,
+				errs.BuildErrDbRecord(
+					errs.DbRecordNotFound,
+					http.StatusBadRequest,
+					string(consts.HttpExprErrorBadRequest),
+				)
+		}
+		return nil, res.Error
+	}
+
+	var user model.User
+	res = r.pDB.DB().Where("user_id = ?", token.Uid).First(&user)
+	if res.Error != nil {
+		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+			return nil,
+				errs.BuildErrDbRecord(
+					errs.DbRecordNotFound,
+					http.StatusNotFound,
+					string(consts.ExprUser),
+				)
+		}
+		return nil, res.Error
+	}
+	return &user, nil
+}
