@@ -22,7 +22,11 @@ const (
 	ExprEntrycode    expression = "Attr-Entrycode"
 	ExprRegistercode expression = "Attr-Registercode"
 
-	ExprUser     expression = "User"
+	InlineExprUser  expression = "User"
+	InlineExprAdmin expression = "Admin"
+	ExprRoleUser    expression = "Role-User"
+	ExprRoleAdmin   expression = "Role-Admin"
+
 	ExprCalendar expression = "Attr-Calendar"
 
 	ExprEnckey expression = "Crypto-PrivateKey"

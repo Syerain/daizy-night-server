@@ -172,7 +172,7 @@ func (r *RepoToken) GetUserByRefreshToken(rawToken string) (*model.User, error) 
 				errs.BuildErrDbRecord(
 					errs.DbRecordNotFound,
 					http.StatusNotFound,
-					string(consts.ExprUser),
+					string(consts.InlineExprUser),
 				)
 		}
 		return nil, res.Error

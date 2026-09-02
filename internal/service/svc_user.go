@@ -96,6 +96,7 @@ func (s *ServiceUser) Register(b *model.RegisterBody) (*model.User, error) {
 			Http: http.StatusInternalServerError,
 		}
 	default:
+		slog.Error(string(consts.ExprUnreachableCase))
 		return nil, &errs.ErrUnknown{
 			Type: errs.Undefined,
 			Http: http.StatusInternalServerError,
@@ -105,6 +106,7 @@ func (s *ServiceUser) Register(b *model.RegisterBody) (*model.User, error) {
 	// DO NOT REMOVE
 	user, err := s.repoUser.GetUserByUsername(b.Username)
 	if err != nil {
+		slog.Error(string(consts.ExprUnreachableCase))
 		return nil, err
 	}
 	return user, nil

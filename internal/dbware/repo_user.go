@@ -50,7 +50,10 @@ func (r *RepoUser) CreateUser(b *model.User) error {
 			if err != nil {
 				return err
 			}
+
+			// cover attrs
 			b.UserID = uid
+			b.Role = consts.User
 			b.RegisterTime = time.Now()
 
 			err = tx.Create(b).Error
@@ -117,7 +120,7 @@ func (r *RepoUser) GetUserByUsername(name string) (*model.User, error) {
 	result := r.pDB.DB().Where(&model.User{Username: name}).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, errs.BuildErrDbRecord(errs.DbRecordUsernameNotFound, http.StatusBadRequest, string(consts.ExprUser))
+			return nil, errs.BuildErrDbRecord(errs.DbRecordUsernameNotFound, http.StatusBadRequest, string(consts.InlineExprUser))
 		}
 		return nil, result.Error
 	}
@@ -129,7 +132,7 @@ func (r *RepoUser) GetUserByUid(uid uint) (*model.User, error) {
 	result := r.pDB.DB().Where("user_id = ?", uid).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, errs.BuildErrDbRecord(errs.DbRecordNotFound, http.StatusNotFound, string(consts.ExprUser))
+			return nil, errs.BuildErrDbRecord(errs.DbRecordNotFound, http.StatusNotFound, string(consts.InlineExprUser))
 		}
 		return nil, result.Error
 	}
