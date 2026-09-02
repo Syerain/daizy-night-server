@@ -13,6 +13,8 @@ const (
 
 	ExprFailedRegistercodeWithdraw expression = "failed to withdraw registercode"
 
+	ExprBadFormat expression = "bad format"
+
 	//ExprAtomid       expression = "Attr-AtomID"
 	ExprUsername     expression = "Attr-Username"
 	ExprNickname     expression = "Attr-Nickname"

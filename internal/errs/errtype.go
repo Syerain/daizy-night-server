@@ -170,7 +170,7 @@ var errorMessages = map[errType]string{
 	JwtRefreshTokenInvalid:  "jwt refresh token invalid",
 	JwtRefreshTokenRevoked:  "jwt refresh token revoked",
 	JwtRefreshTokenNotFound: "jwt refresh token not found",
-	JwtRefreshTokenUsed:     "jwt refresh token used",
+	JwtRefreshTokenUsed:     "jwt refresh token used; user may has faced or is facing an attack;",
 	JwtRefreshTokenExpired:  "jwt refresh token expired",
 }
 

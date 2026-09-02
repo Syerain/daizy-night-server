@@ -114,10 +114,9 @@ func (r *RepoToken) RotateRefreshToken(uid uint, usedLookupHash string, newRawTo
 			return res.Error
 		}
 		if res.RowsAffected == 0 {
-			return errs.BuildErrUserLogin(
-				errs.UserLoginParamsIncorrect,
-				http.StatusUnauthorized,
-				string(consts.ExprIndetermined),
+			return errs.BuildErrJwtToken(
+				errs.JwtRefreshTokenUsed,
+				http.StatusBadRequest,
 			)
 		}
 

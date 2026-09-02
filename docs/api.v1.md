@@ -254,6 +254,8 @@
 - `400` 请求体不是合法 JSON、`refresh_token` 缺失，或 `session` 非空（按会话退出暂未支持）
 - `401` access token 缺失、无效或过期
 
+注意 access token 在 15min 过期后，无法通过鉴权，此时应当自行用 refresh token 取得新的 access token 并重试。
+
 ### POST /api/v1/admin/sudo
 
 管理端点，占位实现。需要认证，且要求 `admin` 角色。
