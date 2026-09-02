@@ -293,12 +293,10 @@ func (s *ServiceUser) Signout(b *model.SignoutBody) (success bool, err error) {
 }
 
 func (s *ServiceUser) GetInfoMineByUid(uid uint) (*model.InfoMe, error) {
+	// the repo answers 404 for a missing user record (see repo contract)
 	user, err := s.repoUser.GetUserByUid(uid)
 	if err != nil {
 		return nil, err
-	}
-	if user == nil {
-		return nil, errs.BuildErrDbRecord(errs.DbRecordNotFound, http.StatusNotFound, string(consts.ExprUser))
 	}
 
 	return &model.InfoMe{
@@ -314,23 +312,19 @@ func (s *ServiceUser) GetInfoMineByUid(uid uint) (*model.InfoMe, error) {
 }
 
 func (s *ServiceUser) GetUserByUsername(name string) (*model.User, error) {
+	// the repo answers 400 for a missing username (see repo contract)
 	user, err := s.repoUser.GetUserByUsername(name)
 	if err != nil {
 		return nil, err
-	}
-	if user == nil {
-		return nil, errs.BuildErrDbRecord(errs.Unknown, http.StatusInternalServerError, string(consts.ExprUser))
 	}
 	return user, nil
 }
 
 func (s *ServiceUser) GetUserByUid(uid uint) (*model.User, error) {
+	// the repo answers 404 for a missing user record (see repo contract)
 	user, err := s.repoUser.GetUserByUid(uid)
 	if err != nil {
 		return nil, err
-	}
-	if user == nil {
-		return nil, errs.BuildErrDbRecord(errs.Unknown, http.StatusInternalServerError, string(consts.ExprUser))
 	}
 	return user, nil
 }

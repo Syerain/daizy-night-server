@@ -65,6 +65,34 @@ func TestCreateUserSuccessClaimsRegcode(t *testing.T) {
 	}
 }
 
+// GetUserByUid must answer 404 for a missing user record, per the API docs
+// (the /me endpoint surfaces this status directly).
+func TestGetUserByUidNotFoundIs404(t *testing.T) {
+	r := newUserTestEnv(t)
+
+	_, err := r.GetUserByUid(4242424)
+	if err == nil {
+		t.Fatal("expected error for unknown uid")
+	}
+	errapp, ok := errs.Easx[*errs.ErrDbRecord](err)
+	if !ok {
+		t.Fatalf("expected *errs.ErrDbRecord, got %T: %v", err, err)
+	}
+	if errapp.StatusCode() != 404 {
+		t.Fatalf("status = %d, want 404", errapp.StatusCode())
+	}
+
+	// the login flow's getter keeps 400 (mapped to a generic login error)
+	_, err = r.GetUserByUsername("ghost")
+	errapp2, ok := errs.Easx[*errs.ErrDbRecord](err)
+	if !ok {
+		t.Fatalf("expected *errs.ErrDbRecord, got %T: %v", err, err)
+	}
+	if errapp2.StatusCode() != 400 {
+		t.Fatalf("status = %d, want 400", errapp2.StatusCode())
+	}
+}
+
 func TestCreateUserUsernameDuplicate(t *testing.T) {
 	r := newUserTestEnv(t)
 	mustSeedRegcode(t, r, "aa.bb", false)

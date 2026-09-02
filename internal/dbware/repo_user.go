@@ -109,6 +109,9 @@ func claimRegistercode(tx *gorm.DB, b *model.User) error {
 	return nil
 }
 
+// Repo contract: both getters return a business error on "not found"
+// (GetUserByUsername → 400 for the login flow's generic mapping;
+// GetUserByUid → 404 per the API docs). (nil, nil) is never returned.
 func (r *RepoUser) GetUserByUsername(name string) (*model.User, error) {
 	var user model.User
 	result := r.pDB.DB().Where(&model.User{Username: name}).First(&user)
@@ -126,7 +129,7 @@ func (r *RepoUser) GetUserByUid(uid uint) (*model.User, error) {
 	result := r.pDB.DB().Where("user_id = ?", uid).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, errs.BuildErrDbRecord(errs.DbRecordNotFound, http.StatusBadRequest, string(consts.ExprUser))
+			return nil, errs.BuildErrDbRecord(errs.DbRecordNotFound, http.StatusNotFound, string(consts.ExprUser))
 		}
 		return nil, result.Error
 	}
