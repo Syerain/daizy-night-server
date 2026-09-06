@@ -46,8 +46,8 @@ func NewProviderDB(ctx struct {
 		&model.RefreshToken{},
 		&model.RegistercodeRecord{},
 		&model.Calendar{},
-		// has-many 子表：gorm 的 AutoMigrate 不会随父表自动创建，
-		// 必须显式列出，否则 calendar put 会报 "no such table: calendar_items"。
+		// has-many sub-table：gorm AutoMigrate wont be created automaticly as its father table，
+		// u must explicitly state it or Calendar-Put will error with "no such table: calendar_items"
 		&model.CalendarItem{},
 	); err != nil {
 		return nil, err

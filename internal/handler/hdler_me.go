@@ -42,19 +42,4 @@ func (h *HandlerComplex) HandleMe(ctx *echo.Context) error {
 	mid.RespondObj(ctx, http.StatusOK, v1.InfoMeResponse{InfoMe: *b})
 
 	return nil
-
-	/*token, err := echo.ContextGet[*jwt.Token](ctx, string(consts.ExprContextKeyJWT))
-	if err != nil {
-		return err
-	}
-	claims, ok := token.Claims.(*model.JwtAccessTokenPayload)
-	if !ok {
-		slog.Error("failed to assert claims to JwtAccessTokenPayload")
-		return echo.ErrUnauthorized
-	}
-	return mid.RespondObj(ctx, 200, map[string]any{
-		string(consts.ExprUserID):   claims.Uid,
-		string(consts.ExprUsername): claims.Username,
-		string(consts.JsonExprRole): claims.Role,
-	})*/
 }
